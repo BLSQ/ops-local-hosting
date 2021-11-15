@@ -1,0 +1,49 @@
+- name: Update apt cache.
+  apt: update_cache=yes cache_valid_time=600
+  when: ansible_os_family == 'Debian'
+
+- name: Wait for systemd to complete initialization.  # noqa 303
+  command: systemctl is-system-running
+  register: systemctl_status
+  until: >
+    'running' in systemctl_status.stdout or
+    'degraded' in systemctl_status.stdout
+  retries: 30
+  delay: 5
+  when: ansible_service_mgr == 'systemd'
+  changed_when: false
+  failed_when: systemctl_status.rc > 1
+
+- name: Ensure docker is present
+  include_role:
+    name: geerlingguy.docker
+  vars:
+    docker_compose_version: "1.28.6"
+    docker_daemon_options: 
+        log-driver: "json-file"
+        log-opts: 
+          max-size: "50m"
+          max-file: "2"
+          tag: "{{ '{{' }}.Name}}"            
+
+- name: Install docker library
+  include_role:
+    name: geerlingguy.pip
+  vars:
+    pip_install_packages:
+      - name: docker
+
+- name: Setup proxy network
+  community.docker.docker_network:
+    name: proxy
+    driver: bridge
+
+- name: Create Docker clean up cron job
+  cron:
+    name: "docker disk clean up"
+    job: "docker system prune -af > /dev/null 2>&1"
+    minute: "0"
+    hour: "0"
+    day: "*"
+    month: "*"
+    weekday: "0"
