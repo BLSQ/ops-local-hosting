@@ -1,0 +1,92 @@
+version: "3.9"
+services:
+  hesabu-db:
+    image: postgres:${POSTGRES_VERSION}
+    volumes:
+      - ./storage/db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+
+  hesabu-redis:
+    image: redis:${REDIS_VERSION}    
+    command: redis-server --requirepass ${yourredispassword}    
+    volumes:
+      - ./storage/redis:/data 
+
+  hesabu-web:
+    image: blsq/orbf2:${HESABU_VERSION}
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
+    networks: 
+      - proxy
+      - default
+    ports:
+      - "3000:3000"
+    depends_on:
+      - hesabu-db
+      - hesabu-redis
+    environment:
+      - REDIS_URL=redis://:${yourredispassword}@hesabu-redis:6379
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@hesabu-db:5432/${POSTGRES_DB}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}      
+      - RAILS_ENV=production
+      - DISABLE_FORCE_SSL=TRUE
+      - RACK_ENV=production
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - RAILS_ACTIVE_STORAGE=minio
+      - S3_SIMULATION_ACCESS=${MINIO_ROOT_USER}
+      - S3_SIMULATION_BUCKET=simulation
+      - S3_SIMULATION_REGION=us-east-1
+      - S3_SIMULATION_SECRET=${MINIO_ROOT_PASSWORD}
+      - S3_SIMULATION_ENDPOINT=${MINIO_URL}
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=proxy'
+
+      - 'traefik.http.routers.hesabu.entrypoints=websecure'
+      - 'traefik.http.routers.hesabu.middlewares=no-auth-secured@file'
+      - 'traefik.http.routers.hesabu.rule=Host(`hesabu.${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.hesabu.tls.certresolver=lets-encrypt'
+      - 'traefik.http.routers.hesabu.tls.options=mintls12@file'
+
+      - "traefik.http.services.hesabu.loadbalancer.passhostheader=true"
+
+      - "ofelia.enabled=true"
+      # job1 to flag in db jobs no more appearing in sidekiq
+      - "ofelia.job-exec.invoicing_jobs.schedule=@every 10m"
+      - "ofelia.job-exec.invoicing_jobs.command=rake invoicing_jobs:discard"
+      # job2 to remove from sidekiq queue duplicated jobs
+      - "ofelia.job-exec.duplicate_jobs.schedule=@every 11m"
+      - "ofelia.job-exec.duplicate_jobs.command=rake duplicate_jobs:clear"
+
+  ofelia:
+    image: mcuadros/ofelia:latest
+    restart: always
+    command: daemon --docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      
+      
+  hesabu-worker:
+    image: blsq/orbf2:${HESABU_VERSION}
+    command: bash -c "bundle exec sidekiq -q dhis2-safe -q default"
+    depends_on:
+      - hesabu-db
+      - hesabu-redis
+    environment:
+      - REDIS_URL=redis://:${yourredispassword}@hesabu-redis:6379
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@hesabu-db:5432/${POSTGRES_DB}
+      - RAILS_ENV=production
+      - RACK_ENV=production
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - RAILS_ACTIVE_STORAGE=minio
+      - S3_SIMULATION_ACCESS=${MINIO_ROOT_USER}
+      - S3_SIMULATION_BUCKET=simulation
+      - S3_SIMULATION_REGION=us-east-1
+      - S3_SIMULATION_SECRET=${MINIO_ROOT_PASSWORD}
+      - S3_SIMULATION_ENDPOINT=${MINIO_URL}
+
+networks:
+  proxy:
+    external: true      
