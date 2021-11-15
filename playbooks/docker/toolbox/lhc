@@ -1,0 +1,65 @@
+#!/usr/bin/env python
+
+import os
+import sys
+from urllib.parse import urlparse
+import datetime;
+
+
+
+#print("ARGS : ",str(sys.argv))
+command = "bin/bash"
+
+
+import docker
+client = docker.from_env()
+ts = datetime.datetime.now()  - datetime.timedelta(seconds=5)
+
+container_filter = sys.argv[2]
+
+for container in client.containers.list():
+   if container_filter in container.name:
+      #import pdb; pdb.set_trace()
+      database_urls = [x for x in container.attrs["Config"]["Env"] if x.startswith("DATABASE_URL=") ]
+      if len(database_urls) > 0:
+         database_url = database_urls[0][len("DATABASE_URL="):]
+         result = urlparse(database_url)
+         userpasswd, hostport = result.netloc.split('@')
+         path = result.path[1:]
+         user = userpasswd.split(':')[0]
+         password = userpasswd.split(':')[1]
+         host = hostport.split(':')[0]
+         port = hostport.split(':')[1]
+         print("")
+         print("*************** ", container.name, container.image.attrs["RepoTags"])
+
+         if sys.argv[1] == "top":
+            command = f"PGPASSWORD={password} pg_activity -h {host} -U {user} -d {path} --rds"
+         if sys.argv[1] == "cli":
+            command = f"pgcli {database_url}"
+         if sys.argv[1] == "dump":
+            command = f"pg_dump -Fc -v --no-acl --no-owner --dbname={database_url} -f ./db.dump"
+         if sys.argv[1] == "diagnosedb":
+            query = "COPY (select * from pg_stat_activity) TO STDOUT WITH CSV HEADER;"
+            command = f"PAGER=cat psql {database_url} -c \"{query}\""
+
+         if sys.argv[1] == "diagnoserb":        
+            pid_lines = [line for line in container.exec_run("ps ax").output.split(b'\n') if 'sidekiq' in str(line) or 'puma' in str(line) ]
+            if len(pid_lines) > 0:
+               pid =  [line.decode("utf-8").split("?")[0].strip() [0] for line in pid_lines]
+               
+               container.exec_run(f"kill -3 {pid}")
+               print("ts ", ts)
+               logs = container.logs(stderr=True, since=ts)
+               if logs: 
+                     for line in logs.decode("utf-8").split("\n"):
+                        print(line)
+            command =  "ls"     
+         import os
+         os.system(command)
+
+quit()
+
+
+
+#print(command)
