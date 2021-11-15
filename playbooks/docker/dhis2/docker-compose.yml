@@ -1,0 +1,29 @@
+version: '3'
+services:
+  dhis2:
+    image: blsqtech/dhis2:2.34.7
+    restart: always
+    expose:
+      - "8080"
+    networks: 
+      - proxy
+    environment:
+      - DOMAIN_NAME=${DOMAIN_NAME}      
+      - dhis_db_user=${dhis_db_user}      
+      - dhis_db_password=${dhis_db_password}      
+      - dhis_db_name=${dhis_db_name}      
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=proxy'
+
+      - 'traefik.http.routers.dhis2.entrypoints=websecure'
+      - 'traefik.http.routers.dhis2.middlewares=no-auth-secured@file'
+      - 'traefik.http.routers.dhis2.rule=Host(`${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.dhis2.tls.certresolver=lets-encrypt'
+      - 'traefik.http.routers.dhis2.tls.options=mintls12@file'
+
+      - "traefik.http.services.dhis2.loadbalancer.passhostheader=true"
+
+networks:
+  proxy:
+    external: true      

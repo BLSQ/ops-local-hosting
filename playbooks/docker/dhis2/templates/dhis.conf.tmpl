@@ -1,0 +1,54 @@
+# https://docs.dhis2.org/master/en/implementer/html/install_dhis2_configuration_reference.html
+#
+# Hibernate SQL dialect
+connection.dialect = org.hibernate.dialect.PostgreSQLDialect
+
+# JDBC driver class
+connection.driver_class = org.postgresql.Driver
+
+# JDBC driver connection URL
+connection.url = jdbc:postgresql://{{ .Env.DOMAIN_NAME}}:5432/{{.Env.dhis_db_name}}?sslmode=require
+
+# Database username
+connection.username = {{.Env.dhis_db_user}}
+
+# Database password
+connection.password = {{.Env.dhis_db_password}}
+
+# Database schema behavior, can be validate, update, create, create-drop
+connection.schema = update
+
+# Encryption password (sensitive)
+# encryption.password = {{.Env.ENCRYPTION_PASSWORD}}
+
+# Number of maximum connection allowed on db
+c3p0.max_size = {{default .Env.DB_POOL_SIZE "16"}}
+hibernate.c3p0.max_size= {{default .Env.DB_POOL_SIZE "16"}}
+
+# These are separate from the Artemis logging system, you can disable
+# these and still use the async audit tracking.
+audit.logger    = {{default .Env.DHIS_AUDIT_LOGGER "off"}}
+audit.database  = {{default .Env.DHIS_AUDIT_DB "off"}}
+
+# This handles the artemis async logging system.
+#
+# https://docs.dhis2.org/2.34/en/dhis2_system_administration_guide/audit.html
+#
+# Each property accepts a semicolon delimited list of valid Audit Types:
+#       - CREATE
+#       - UPDATE
+#       - DELETE
+#       - READ
+audit.metadata  = {{default .Env.DHIS_AUDIT_MATRIX_METADATA ""}}
+audit.tracker   = {{default .Env.DHIS_AUDIT_MATRIX_TRACKER ""}}
+audit.aggregate = {{default .Env.DHIS_AUDIT_MATRIX_AGGREGATE ""}}
+
+# Store dhis2 apps in s3
+# filestore.provider=aws-s3
+# filestore.container={{.Env.FILESTORE_BUCKET}}
+# filestore.location={{.Env.FILESTORE_LOCATION}}
+# filestore.identity={{.Env.FILESTORE_IDENTITY}}
+# filestore.secret={{.Env.FILESTORE_SECRET}}
+
+# Base URL
+server.base.url = {{default .Env.DOMAIN_NAME ""}}
