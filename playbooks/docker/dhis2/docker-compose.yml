@@ -3,6 +3,8 @@ services:
   dhis2:
     image: blsqtech/dhis2:2.34.7
     restart: always
+    volumes:
+      - dhis2_files:/files
     expose:
       - "8080"
     networks: 
@@ -27,3 +29,6 @@ services:
 networks:
   proxy:
     external: true      
+
+volumes:
+  dhis2_files:

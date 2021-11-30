@@ -1,0 +1,24 @@
+---
+- hosts: dhis2
+  become: yes
+  vars: 
+      postgresql_backup_dir : "/var/lib/postgresql/backups"
+  tasks:
+    - name: Create a backup directory
+      become: true
+      file:
+        path: "{{ postgresql_backup_dir }}"
+        state: directory
+        mode: 0777
+        recurse: yes
+
+    - name: Create postgresql backup cron job
+      cron:
+        name: "postgresql backup"
+        hour: "{{ postgresql_backup_hour | default(1) }}"
+        minute: "{{ postgresql_backup_minute | default(0) }}"
+        day: "{{ postgresql_backup_day | default(omit) }}"
+        month: "{{ postgresql_backup_month | default(omit) }}"
+        weekday: "{{ postgresql_backup_weekday | default(omit) }}"
+        job: pg_dump -Fc -v --no-acl --no-owner --dbname {{ dhis_db_name }}  | gzip > "{{ postgresql_backup_dir }}/`date +\%F`_`date +\%T`-{{ dhis_server_name }}.dump.gz" 
+      become_user: postgres
