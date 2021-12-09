@@ -7,13 +7,14 @@ services:
       - dhis2_files:/files
     expose:
       - "8080"
-    networks: 
-      - proxy
+    ports:
+      - 8080:8080
     environment:
-      - DOMAIN_NAME=${DOMAIN_NAME}      
-      - dhis_db_user=${dhis_db_user}      
-      - dhis_db_password=${dhis_db_password}      
-      - dhis_db_name=${dhis_db_name}      
+      - DOMAIN_NAME=${DOMAIN_NAME}
+      - dhis_db_user=${dhis_db_user}
+      - dhis_db_password=${dhis_db_password}
+      - dhis_db_name=${dhis_db_name}
+      - dhis_db_host=${dhis_db_host}
     labels:
       - 'traefik.enable=true'
       - 'traefik.docker.network=proxy'
@@ -25,10 +26,6 @@ services:
       - 'traefik.http.routers.dhis2.tls.options=mintls12@file'
 
       - "traefik.http.services.dhis2.loadbalancer.passhostheader=true"
-
-networks:
-  proxy:
-    external: true      
 
 volumes:
   dhis2_files:
