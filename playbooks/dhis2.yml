@@ -48,12 +48,4 @@
         env_template: docker/.env
         unit_template: docker-compose/compose-unit.j2
 
-      - name: traefik
-        enabled: yes
-        need_restart: yes
-        root_dir: /srv/docker/traefik
-        compose_template: docker/traefik/docker-compose.yml
-        env_template: docker/.env
-        unit_template: docker-compose/compose-unit.j2
-
     
