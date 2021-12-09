@@ -23,6 +23,7 @@
         - libssl-dev
         - libssl-doc
         - gnupg
+        - curl
 
     - name: Ensure locales exist                                                                                                                                                                                                                                              
       locale_gen:                                                                                                                                                                                                                                                             
