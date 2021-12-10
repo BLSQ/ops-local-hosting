@@ -4,7 +4,7 @@ services:
     image: blsqtech/dhis2:2.34.7
     restart: always
     volumes:
-      - dhis2_files:/files
+      - dhis2_files:/root/files
     expose:
       - "8080"
     ports:
