@@ -3,18 +3,14 @@ services:
   dhis2:
     image: blsq/dhis2:2.34.8
     restart: always
+    env_file: .env
     volumes:
       - dhis2_files:/root/files
     expose:
       - "8080"
     ports:
       - 8080:8080
-    environment:
-      - DHIS_BASE_URL=https://${DOMAIN_NAME}
-      - DATABASE_USER=${DATABASE_USER}
-      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
-      - DATABASE_NAME=${DATABASE_NAME}
-      - DATABASE_HOST=${DATABASE_HOST}
+
     labels:
       - 'traefik.enable=true'
       - 'traefik.docker.network=proxy'
