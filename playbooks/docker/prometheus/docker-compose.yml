@@ -1,0 +1,37 @@
+version: '3'
+services:
+  prometheus:
+    image: prom/prometheus:${PROMETHEUS_TAG}
+    restart: always
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+
+    ports:
+      - 9090:9090
+    networks: 
+      - proxy
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=proxy'
+
+      - 'traefik.http.routers.prometheus.entrypoints=websecure'
+      - 'traefik.http.routers.prometheus.middlewares=no-auth-secured@file'
+      - 'traefik.http.routers.prometheus.rule=Host(`${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.prometheus.tls.certresolver=lets-encrypt'
+      - 'traefik.http.routers.prometheus.tls.options=mintls12@file'
+
+      - "traefik.http.services.prometheus.loadbalancer.passhostheader=true"
+
+networks:
+  proxy:
+    external: true   
+
+volumes:
+  prometheus_data:
