@@ -12,6 +12,11 @@
         src: "docker/prometheus/prometheus.yml"
         dest: "/srv/docker/prometheus/prometheus/prometheus.yml"
         force: yes
+    - name: "copy web.yml"
+      template:
+        src: "docker/prometheus/web.yml"
+        dest: "/srv/docker/prometheus/prometheus/web.yml"
+        force: yes
     - name: install pip3
       apt: name=python3-pip state=present update-cache=yes 
     - name: Install latest passlib with pip
