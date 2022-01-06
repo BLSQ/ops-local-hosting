@@ -75,9 +75,9 @@ If we want to require a username and password from all users accessing the Prome
 
 Save that password somewhere, we will use it in the next step.
 
-- Modifyinghe the web configuration file name `web.yml`
+- Modifying the web configuration file name `web.yml`
 
-Edit the web.yml file by replacing the <USER> and <HASHED_PASS> which has just been generated.
+Edit the web.yml file by replacing the `<USER>` and `<HASHED_PASS>` which has just been generated.
 ```
 basic_auth_users:
     <USER> : <HASHED_PASS>
