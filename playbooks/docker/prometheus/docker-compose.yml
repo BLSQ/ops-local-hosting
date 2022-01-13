@@ -29,10 +29,32 @@ services:
       - 'traefik.http.routers.prometheus.tls.options=mintls12@file'
 
       - "traefik.http.services.prometheus.loadbalancer.passhostheader=true"
+  grafana:
+    image: grafana/grafana
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    ports:
+      - 3000:3000
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - 'proxy'
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=proxy'
 
+      - 'traefik.http.routers.portainer-secured.entrypoints=websecure'
+      - 'traefik.http.routers.portainer-secured.middlewares=no-auth-secured@file'
+      - 'traefik.http.routers.portainer-secured.rule=Host(`grafana.${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.portainer-secured.tls.certresolver=lets-encrypt'
+      - 'traefik.http.routers.portainer-secured.tls.options=mintls12@file'
+
+      - 'traefik.http.services.portainer-ce.loadbalancer.server.port=3000'  
 networks:
   proxy:
     external: true   
 
 volumes:
   prometheus_data:
+  grafana_data:
