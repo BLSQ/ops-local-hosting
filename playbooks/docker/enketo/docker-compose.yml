@@ -1,0 +1,45 @@
+version: "3.9"
+services:
+  enketo_redis_main:
+    image: redis:5
+    volumes:
+      - ./enketo/redis-enketo-main.conf:/etc/redis/redis.conf:ro
+      - ./redis_main_data/:/data/
+    restart: unless-stopped
+
+  enketo_redis_cache:
+    image: redis:5
+    volumes:
+      - ./enketo/redis-enketo-cache.conf:/etc/redis/redis.conf:ro
+      - ./redis_cache_data/:/data/
+    restart: unless-stopped
+
+  enketo-web:
+    image: "enketo/enketo-express:2.8.0"
+    networks:
+      - proxy
+      - default
+    ports:
+      - "8005:8005"
+    volumes:
+      - ./enketo/enketo-config.json:/srv/src/enketo_express/config/config.json
+    depends_on:
+      - enketo_redis_main
+      - enketo_redis_cache
+    environment:
+      - OHAI=1
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=proxy'
+
+      - 'traefik.http.routers.enketo.entrypoints=websecure'
+      - 'traefik.http.routers.enketo.middlewares=no-auth-secured@file'
+      - 'traefik.http.routers.enketo.rule=Host(`enketo.${domain_name}`)'
+      - 'traefik.http.routers.enketo.tls.certresolver=lets-encrypt'
+      - 'traefik.http.routers.enketo.tls.options=mintls12@file'
+
+      - "traefik.http.services.enketo.loadbalancer.passhostheader=true"
+
+networks:
+  proxy:
+    external: true
