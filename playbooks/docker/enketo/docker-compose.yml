@@ -1,40 +1,50 @@
-version: "3.9"
+version: "3"
 services:
-  enketo_redis_main:
+  redis_main:
     image: redis:5
+    command: redis-server   
     volumes:
-      - ./enketo/redis-enketo-main.conf:/etc/redis/redis.conf:ro
-      - ./redis_main_data/:/data/
+      - ./storage/redis_main_data/:/data/
     restart: unless-stopped
 
-  enketo_redis_cache:
+  redis_cache:
     image: redis:5
+    command: redis-server
     volumes:
-      - ./enketo/redis-enketo-cache.conf:/etc/redis/redis.conf:ro
-      - ./redis_cache_data/:/data/
+      - ./storage/redis_cache_data/:/data/
     restart: unless-stopped
 
   enketo-web:
-    image: "enketo/enketo-express:2.8.0"
+    image: "enketo/enketo-express:3.0.4"
     networks:
       - proxy
       - default
     ports:
       - "8005:8005"
-    volumes:
-      - ./enketo/enketo-config.json:/srv/src/enketo_express/config/config.json
     depends_on:
-      - enketo_redis_main
-      - enketo_redis_cache
+      - redis_main
+      - redis_cache
+    volumes:
+      - ./config/config.json:/srv/src/enketo_express/config/config.json
+      - ./storage/secrets/:/srv/src/enketo_express/setup/docker/secrets/      
     environment:
-      - OHAI=1
+      - ENKETO_VAR=yes
+      - ENKETO_API_KEY=${ENKETO_API_KEY}
+      - ENKETO_APP_NAME=Enketo for Iaso
+      - ENKETO_DEFAULT_THEME=grid
+      - ENKETO_LINKED_FORM_AND_DATA_SERVER_API_KEY=${ENKETO_LINKED_FORM_AND_DATA_SERVER_API_KEY}
+      - ENKETO_LINKED_FORM_AND_DATA_SERVER_NAME=${ENKETO_LINKED_FORM_AND_DATA_SERVER_NAME}
+      - ENKETO_LINKED_FORM_AND_DATA_SERVER_SERVER_URL=https://iaso.${DOMAIN_NAME}
+      - ENKETO_LOGO_SOURCE=https://i1.wp.com/bluesquarehub.com/wp-content/uploads/2019/11/Bluesquare-horizontal-white.png?w=200&ssl=1
+      - ENKETO_REDIS_CACHE_URL=redis://redis_cache:6379
+      - ENKETO_REDIS_MAIN_URL=redis://redis_cache:6379
     labels:
       - 'traefik.enable=true'
       - 'traefik.docker.network=proxy'
 
       - 'traefik.http.routers.enketo.entrypoints=websecure'
       - 'traefik.http.routers.enketo.middlewares=no-auth-secured@file'
-      - 'traefik.http.routers.enketo.rule=Host(`enketo.${domain_name}`)'
+      - 'traefik.http.routers.enketo.rule=Host(`enketo.${DOMAIN_NAME}`)'
       - 'traefik.http.routers.enketo.tls.certresolver=lets-encrypt'
       - 'traefik.http.routers.enketo.tls.options=mintls12@file'
 

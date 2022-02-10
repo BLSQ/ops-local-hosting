@@ -1,6 +1,8 @@
 env
+inventory
 playbooks/docker/storage
 playbooks/docker/redis/storage
 playbooks/docker/minio/storage
 playbooks/docker/netdata/storage
 playbooks/docker/hesabu/storage
+playbooks/docker/enketo/storage
