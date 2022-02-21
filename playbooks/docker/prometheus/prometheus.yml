@@ -3,9 +3,28 @@ global:
   external_labels:
     monitor: 'prometheus'
 
+alerting:
+  alertmanagers:
+    - scheme: https
+      static_configs:
+        - targets: [ 'alertmanager.<DOMAIN_NAME>' ]
+
+rule_files:
+  - alert.yml
+
 scrape_configs:
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:9090']
-
+      
+# DHIS2 Prometheus monitoring
+# The basic_auth blocks contains the credentials required to access the metrics
+  - job_name: dhis2
+    metrics_path: /api/metrics
+    scheme: https
+    static_configs:
+      - targets: ['<DOMAIN_NAME>']
+    basic_auth:
+      username: <dhis_user>
+      password: <dhis-password>
 
