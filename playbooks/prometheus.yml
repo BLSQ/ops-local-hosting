@@ -7,6 +7,36 @@
         path: "/srv/docker/prometheus/prometheus"
         state: directory
         recurse: yes
+    - name: "create directory for alertmanager"
+      file:
+        path: "/srv/docker/prometheus/alertmanager"
+        state: directory
+        recurse: yes
+    - name: "create directory for grafana datasources"
+      file:
+        path: "/srv/docker/prometheus/grafana/provisioning/datasources"
+        state: directory
+        recurse: yes      
+    - name: "create directory for grafana dashboards"
+      file:
+        path: "/srv/docker/prometheus/grafana/provisioning/dashboards"
+        state: directory
+        recurse: yes
+    - name: "copy datasource.yml"
+      template:
+        src: "docker/prometheus/grafana/provisioning/datasources/datasource.yml"
+        dest: "/srv/docker/prometheus/grafana/provisioning/datasources/datasource.yml"
+        force: yes
+    - name: "copy dashboard.yml"
+      template:
+        src: "docker/prometheus/grafana/provisioning/dashboards/dashboard.yml"
+        dest: "/srv/docker/prometheus/grafana/provisioning/dashboards/dashboard.yml"
+        force: yes
+    - name: "copy dhis2.json"
+      template:
+        src: "docker/prometheus/grafana/provisioning/dashboards/dhis2.json"
+        dest: "/srv/docker/prometheus/grafana/provisioning/dashboards/dhis2.json"
+        force: yes
     - name: "copy prometheus.yml"
       template:
         src: "docker/prometheus/prometheus.yml"
@@ -16,6 +46,16 @@
       template:
         src: "docker/prometheus/web.yml"
         dest: "/srv/docker/prometheus/prometheus/web.yml"
+        force: yes
+    - name: "copy alert.yml"
+      template:
+        src: "docker/prometheus/alert.yml"
+        dest: "/srv/docker/prometheus/prometheus/alert.yml"
+        force: yes    
+    - name: "copy alertmanager.yml"
+      template:
+        src: "docker/prometheus/alertmanager/alertmanager.yml"
+        dest: "/srv/docker/prometheus/alertmanager/alertmanager.yml"
         force: yes
     - name: install pip3
       apt: name=python3-pip state=present update-cache=yes 
