@@ -38,19 +38,49 @@ services:
       - 3000:3000
     volumes:
       - grafana_data:/var/lib/grafana
+      - /srv/docker/prometheus/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - /srv/docker/prometheus/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./prometheus/grafana/config.ini:/etc/grafana/config.ini
+
     networks:
       - 'proxy'
     labels:
       - 'traefik.enable=true'
       - 'traefik.docker.network=proxy'
 
-      - 'traefik.http.routers.portainer-secured.entrypoints=websecure'
-      - 'traefik.http.routers.portainer-secured.middlewares=no-auth-secured@file'
-      - 'traefik.http.routers.portainer-secured.rule=Host(`grafana.${DOMAIN_NAME}`)'
-      - 'traefik.http.routers.portainer-secured.tls.certresolver=lets-encrypt'
-      - 'traefik.http.routers.portainer-secured.tls.options=mintls12@file'
+      - 'traefik.http.routers.grafana-secured.entrypoints=websecure'
+      - 'traefik.http.routers.grafana-secured.middlewares=no-auth-secured@file'
+      - 'traefik.http.routers.grafana-secured.rule=Host(`grafana.${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.grafana-secured.tls.certresolver=lets-encrypt'
+      - 'traefik.http.routers.grafana-secured.tls.options=mintls12@file'
 
-      - 'traefik.http.services.portainer-ce.loadbalancer.server.port=3000'  
+      - 'traefik.http.services.grafana.loadbalancer.server.port=3000'  
+
+  alertmanager:
+    image: prom/alertmanager
+    restart: unless-stopped
+    volumes:
+      - /srv/docker/prometheus/alertmanager:/etc/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+
+    ports:
+      - 9093:9093
+    networks:
+      - 'proxy'
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=proxy'
+
+      - 'traefik.http.routers.alertmanager-secured.entrypoints=websecure'
+      - 'traefik.http.routers.alertmanager-secured.middlewares=no-auth-secured@file'
+      - 'traefik.http.routers.alertmanager-secured.rule=Host(`alertmanager.${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.alertmanager-secured.tls.certresolver=lets-encrypt'
+      - 'traefik.http.routers.alertmanager-secured.tls.options=mintls12@file'
+
+      - 'traefik.http.services.alertmanager.loadbalancer.server.port=9093'  
+
 networks:
   proxy:
     external: true   
