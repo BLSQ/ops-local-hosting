@@ -1,0 +1,14 @@
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    orgId: 1
+    url: https://prometheus.<DOMAIN_NAME>
+    basicAuth: true
+    basicAuthUser: <basic_auth _username>
+    secureJsonData:
+      basicAuthPassword: <basic_auth_password>
+    isDefault: true
+    editable: true
