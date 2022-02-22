@@ -6,3 +6,4 @@ playbooks/docker/minio/storage
 playbooks/docker/netdata/storage
 playbooks/docker/hesabu/storage
 playbooks/docker/enketo/storage
+playbooks/docker/iaso/storage

@@ -59,6 +59,14 @@
       - ../roles/docker-compose-systemd
   vars:
       docker_services:
+      - name: iaso
+        enabled: yes
+        need_restart: yes
+        root_dir: /srv/docker/iaso
+        compose_template: docker/iaso/docker-compose.yml
+        env_template: docker/iaso.env
+        unit_template: docker-compose/compose-unit.j2
+
       - name: enketo
         enabled: yes
         need_restart: yes
