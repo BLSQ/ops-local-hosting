@@ -1,0 +1,19 @@
+route:
+  receiver: 'slack'
+
+receivers:
+- name: 'slack'
+  slack_configs:
+  - channel: '#<channel-name>'
+    send_resolved: true
+    username: '<username>'
+    api_url: '<incomming-webhook-url>'
+    icon_url: 'https://avatars3.githubusercontent.com/u/3380462'
+    text: |-
+      {{'{{ range .Alerts }}'}}
+         *Alert:* {{'{{ .Annotations.title }}'}} - `{{'{{ .Labels.severity }}'}}`
+
+        *Details:*
+        {{'{{ range .Labels.SortedPairs }}'}} • *{{'{{ .Name }}'}}:* `{{'{{ .Value }}'}}`
+        {{'{{ end }}'}}
+      {{'{{ end }}'}}

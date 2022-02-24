@@ -1,0 +1,17 @@
+groups:
+  - name: AllInstances
+    rules:
+      - alert: InstanceDown 
+        expr: up == 0
+        for: 1m
+        annotations:
+          title: 'Instance {{'{{ $labels.instance }}'}} down'
+        labels: 
+          severity: critical
+      - alert: JVM_OutOfMemory
+        expr: (sum by (instance)(jvm_memory_used_bytes{area="heap"}) / sum by (instance)(jvm_memory_max_bytes{area="heap"})) * 100 > 80
+        for: 1m
+        annotations:
+          title: 'JVM Instance {{'{{ $labels.instance }}'}} memory usage > 80%'
+        labels:
+          severity: critical

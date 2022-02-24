@@ -1,0 +1,102 @@
+---
+- hosts: prometheus
+  become: yes
+  tasks:
+    - name: "create directory for prometheus"
+      file:
+        path: "/srv/docker/prometheus/prometheus"
+        state: directory
+        recurse: yes
+    - name: "create directory for alertmanager"
+      file:
+        path: "/srv/docker/prometheus/alertmanager"
+        state: directory
+        recurse: yes
+    - name: "create directory for grafana datasources"
+      file:
+        path: "/srv/docker/prometheus/grafana/provisioning/datasources"
+        state: directory
+        recurse: yes      
+    - name: "create directory for grafana dashboards"
+      file:
+        path: "/srv/docker/prometheus/grafana/provisioning/dashboards"
+        state: directory
+        recurse: yes
+    - name: "copy datasource.yml"
+      template:
+        src: "docker/prometheus/grafana/provisioning/datasources/datasource.yml"
+        dest: "/srv/docker/prometheus/grafana/provisioning/datasources/datasource.yml"
+        force: yes
+    - name: "copy dashboard.yml"
+      template:
+        src: "docker/prometheus/grafana/provisioning/dashboards/dashboard.yml"
+        dest: "/srv/docker/prometheus/grafana/provisioning/dashboards/dashboard.yml"
+        force: yes
+    - name: "copy dhis2.json"
+      template:
+        src: "docker/prometheus/grafana/provisioning/dashboards/dhis2.json"
+        dest: "/srv/docker/prometheus/grafana/provisioning/dashboards/dhis2.json"
+        force: yes
+    - name: "copy prometheus.yml"
+      template:
+        src: "docker/prometheus/prometheus.yml"
+        dest: "/srv/docker/prometheus/prometheus/prometheus.yml"
+        force: yes
+    - name: "copy web.yml"
+      template:
+        src: "docker/prometheus/web.yml"
+        dest: "/srv/docker/prometheus/prometheus/web.yml"
+        force: yes
+    - name: "copy alert.yml"
+      template:
+        src: "docker/prometheus/alert.yml"
+        dest: "/srv/docker/prometheus/prometheus/alert.yml"
+        force: yes    
+    - name: "copy alertmanager.yml"
+      template:
+        src: "docker/prometheus/alertmanager/alertmanager.yml"
+        dest: "/srv/docker/prometheus/alertmanager/alertmanager.yml"
+        force: yes
+    - name: install pip3
+      apt: name=python3-pip state=present update-cache=yes 
+    - name: Install latest passlib with pip
+      pip: name=passlib  
+    - name: Install apache2-utils
+      apt: name=apache2-utils 
+    - name: "create directory for traefik"
+      file:
+        path: "/srv/docker/traefik/traefik"
+        state: directory
+        recurse: yes
+    - name: "deploying traefik config file"
+      template:
+        src: "docker/traefik/dynamic.yml"
+        dest: "/srv/docker/traefik/traefik/dynamic.yml"
+        force: yes
+    - name: Configure locale to 'en_US.UTF-'
+      command: localectl set-locale LANG={{ config_system_locale }}
+
+- hosts: prometheus
+  become: yes
+  roles:
+      - ../roles/docker-compose-systemd
+  vars:
+      docker_services:
+      - name: prometheus
+        enabled: yes
+        need_restart: yes
+        root_dir: /srv/docker/prometheus
+        compose_template: docker/prometheus/docker-compose.yml
+        env_template: docker/prometheus/.env
+        unit_template: docker-compose/compose-unit.j2
+    
+      - name: traefik
+        enabled: yes
+        need_restart: yes
+        root_dir: /srv/docker/traefik
+        compose_template: docker/traefik/docker-compose.yml
+        env_template: docker/prometheus/.env
+        unit_template: docker-compose/compose-unit.j2
+
+
+    

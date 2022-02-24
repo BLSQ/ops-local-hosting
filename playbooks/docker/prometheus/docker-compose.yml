@@ -1,0 +1,90 @@
+version: '3'
+services:
+  prometheus:
+    image: prom/prometheus:${PROMETHEUS_TAG}
+    restart: always
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--web.config.file=/etc/prometheus/web.yml'
+
+    ports:
+      - 9090:9090
+    networks: 
+      - proxy
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=proxy'
+
+      - 'traefik.http.routers.prometheus.entrypoints=websecure'
+      - 'traefik.http.routers.prometheus.middlewares=no-auth-secured@file'
+      - 'traefik.http.routers.prometheus.rule=Host(`${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.prometheus.tls.certresolver=lets-encrypt'
+      - 'traefik.http.routers.prometheus.tls.options=mintls12@file'
+
+      - "traefik.http.services.prometheus.loadbalancer.passhostheader=true"
+  grafana:
+    image: grafana/grafana
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    ports:
+      - 3000:3000
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - /srv/docker/prometheus/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - /srv/docker/prometheus/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./prometheus/grafana/config.ini:/etc/grafana/config.ini
+
+    networks:
+      - 'proxy'
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=proxy'
+
+      - 'traefik.http.routers.grafana-secured.entrypoints=websecure'
+      - 'traefik.http.routers.grafana-secured.middlewares=no-auth-secured@file'
+      - 'traefik.http.routers.grafana-secured.rule=Host(`grafana.${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.grafana-secured.tls.certresolver=lets-encrypt'
+      - 'traefik.http.routers.grafana-secured.tls.options=mintls12@file'
+
+      - 'traefik.http.services.grafana.loadbalancer.server.port=3000'  
+
+  alertmanager:
+    image: prom/alertmanager
+    restart: unless-stopped
+    volumes:
+      - /srv/docker/prometheus/alertmanager:/etc/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+
+    ports:
+      - 9093:9093
+    networks:
+      - 'proxy'
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=proxy'
+
+      - 'traefik.http.routers.alertmanager-secured.entrypoints=websecure'
+      - 'traefik.http.routers.alertmanager-secured.middlewares=no-auth-secured@file'
+      - 'traefik.http.routers.alertmanager-secured.rule=Host(`alertmanager.${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.alertmanager-secured.tls.certresolver=lets-encrypt'
+      - 'traefik.http.routers.alertmanager-secured.tls.options=mintls12@file'
+
+      - 'traefik.http.services.alertmanager.loadbalancer.server.port=9093'  
+
+networks:
+  proxy:
+    external: true   
+
+volumes:
+  prometheus_data:
+  grafana_data:
