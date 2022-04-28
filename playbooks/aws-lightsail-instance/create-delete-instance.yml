@@ -1,0 +1,49 @@
+---
+
+- hosts: localhost
+  vars:
+    - zone: bluesquare.org
+  tasks:
+    - name: Create a Lightsail instance
+      community.aws.lightsail:
+        state: "{{ state }}"
+        name: "localhosting-{{ instance_name }}"
+        region: eu-west-3
+        zone: eu-west-3a
+        blueprint_id: ubuntu_20_04
+        bundle_id: small_2_0
+        key_pair_name: localhosting-eu-west-3
+      register: result
+    - name: Extract public ip address
+      set_fact:
+        address: "{{ result.instance.public_ip_address }}"
+    - debug: var=address
+
+    - name: Add an A record 
+      community.aws.route53:
+         state: "{{ state }}"
+         zone: "{{ zone }}"
+         record: "{{ item }}.localhosting-{{ instance_name }}.test.{{ zone }}"
+         type: A
+         ttl: 300
+         value: "{{ address }}"
+         wait: yes
+      with_items: 
+         - traefik
+         - minio
+         - minio-admin
+         - portainer
+         - hesabu
+         - netdata
+         - enketo
+         - iaso
+
+    - name: Add an A record 
+      community.aws.route53:
+        state: "{{ state }}"
+        zone: "{{ zone }}"
+        record: "localhosting-{{ instance_name }}.test.{{ zone }}"
+        type: A
+        ttl: 300
+        value: "{{ address }}"
+        wait: yes

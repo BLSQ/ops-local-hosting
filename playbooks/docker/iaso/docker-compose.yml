@@ -1,0 +1,64 @@
+version: "3.3"
+services:
+  db:
+    image:
+      blsq/postgis:12
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./storage/db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${IASO_DB_NAME}
+      POSTGRES_USER: ${IASO_DB_USER}
+      POSTGRES_PASSWORD: ${IASO_DB_PASSWORD}
+
+  iaso:   
+    image: 
+      blsq/iaso:latest
+    ports:
+      - "8081:8081"
+    links:
+      - db
+    depends_on:
+      - db      
+    environment:
+      PREPAREDNESS_TEMPLATE_ID:
+      PREPAREDNESS_TEMPLATE_FR_ID:
+      PLUGINS:
+      FAVICON_PATH:
+      LOGO_PATH:
+      APP_TITLE:
+      GOOGLE_API_KEY_BASE64:
+      THEME_PRIMARY_COLOR:
+      THEME_SECONDARY_COLOR:
+      THEME_PRIMARY_BACKGROUND_COLOR:
+      IASO_ENVIRONMENT: "production"
+      RDS_HOSTNAME: ${IASO_DB_HOST:-db}
+      RDS_DB_NAME: ${IASO_DB_NAME}
+      RDS_USERNAME: ${IASO_DB_USER}
+      RDS_PASSWORD: ${IASO_DB_PASSWORD}
+      DB_READONLY_USERNAME: ${IASO_DB_USER}
+      DB_READONLY_PASSWORD: ${IASO_DB_PASSWORD}
+      SECRET_KEY: ${IASO_SECRET_KEY}
+      ENKETO_API_TOKEN: ${ENKETO_API_KEY}
+      ENKETO_URL: ${ENKETO_URL}
+    entrypoint: ./entrypoint.sh
+    command: start
+    networks: 
+      - proxy
+      - default
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=proxy'
+
+      - 'traefik.http.routers.hesabu.entrypoints=websecure'
+      - 'traefik.http.routers.hesabu.middlewares=no-auth-secured@file'
+      - 'traefik.http.routers.hesabu.rule=Host(`iaso.${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.hesabu.tls.certresolver=lets-encrypt'
+      - 'traefik.http.routers.hesabu.tls.options=mintls12@file'
+
+      - "traefik.http.services.hesabu.loadbalancer.passhostheader=true"
+
+networks:
+  proxy:
+    external: true  
