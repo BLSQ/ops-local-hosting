@@ -1,7 +1,7 @@
 version: '3'
 services:
   dhis2:
-    image: blsq/dhis2:2.34.8
+    image: blsq/dhis2:2.34.9
     restart: always
     env_file: .env
     volumes:
