@@ -8,7 +8,29 @@
 
     - name: Install latest passlib with pip
       pip: name=passlib  
- 
+
+    - name: Install apache2-utils
+      apt: name=apache2-utils 
+
+    - name: "create directory for traefik"
+      file:
+        path: "/srv/docker/traefik/traefik"
+        state: directory
+        recurse: yes
+
+    - name: "deploying traefik config file"
+      template:
+        src: "docker/traefik/dynamic.yml"
+        dest: "/srv/docker/traefik/traefik/dynamic.yml"
+        force: yes
+
+    - name: Generate passwd file for traefik
+      community.general.htpasswd:
+        path: "/srv/docker/traefik/.htpasswd"
+        name: "{{TRAEFIK_USER}}"
+        password: "{{TRAEFIK_PWD}}"
+        state: present
+        
     - name: Configure locale to 'en_US.UTF-'
       command: localectl set-locale LANG={{ config_system_locale }}
 
@@ -25,5 +47,14 @@
         compose_template: docker/dhis2/docker-compose.yml
         env_template: docker/.env
         unit_template: docker-compose/compose-unit.j2
+        
+      - name: traefik
+        enabled: yes
+        need_restart: yes
+        root_dir: /srv/docker/traefik
+        compose_template: docker/traefik/docker-compose.yml
+        env_template: docker/.env
+        unit_template: docker-compose/compose-unit.j2
+
 
     
