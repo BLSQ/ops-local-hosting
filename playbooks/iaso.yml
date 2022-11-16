@@ -1,5 +1,4 @@
 ---
-
 - hosts: iaso
   become: yes
   tasks:
@@ -11,13 +10,13 @@
         hour: "0"
         day: "*"
         month: "*"
-        weekday: "0"  
+        weekday: "0"
     - name: install pip3
-      apt: name=python3-pip state=present update-cache=yes 
+      apt: name=python3-pip state=present update-cache=yes
     - name: Install latest passlib with pip
-      pip: name=passlib  
+      pip: name=passlib
     - name: Install apache2-utils
-      apt: name=apache2-utils  
+      apt: name=apache2-utils
     - name: "create directory for traefik"
       file:
         path: "/srv/docker/traefik/traefik"
@@ -56,9 +55,17 @@
 - hosts: iaso
   become: yes
   roles:
-      - ../roles/docker-compose-systemd
+    - ../roles/docker-compose-systemd
   vars:
-      docker_services:
+    docker_services:
+      - name: minio
+        enabled: yes
+        need_restart: yes
+        root_dir: /srv/docker/minio
+        compose_template: docker/minio/docker-compose.yml
+        env_template: docker/iaso.env
+        unit_template: docker-compose/compose-unit.j2
+
       - name: iaso
         enabled: yes
         need_restart: yes
@@ -74,7 +81,7 @@
         compose_template: docker/enketo/docker-compose.yml
         env_template: docker/enketo.env
         unit_template: docker-compose/compose-unit.j2
-        
+
       - name: traefik
         enabled: yes
         need_restart: yes
