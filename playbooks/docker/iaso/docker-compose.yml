@@ -45,6 +45,8 @@ services:
       SECRET_KEY: ${IASO_SECRET_KEY}
       ENKETO_API_TOKEN: ${ENKETO_API_TOKEN}
       ENKETO_URL: ${ENKETO_URL}
+      DATABASE_URL: postgres://${IASO_DB_USER}:${IASO_DB_PASSWORD}@${IASO_DB_HOST:-db}/${IASO_DB_NAME}
+      BACKGROUND_TASK_SERVICE: POSTGRES
     entrypoint: ./entrypoint.sh
     command: start
     networks:
@@ -61,6 +63,47 @@ services:
       - "traefik.http.routers.hesabu.tls.options=mintls12@file"
 
       - "traefik.http.services.hesabu.loadbalancer.passhostheader=true"
+
+  iaso-worker:
+    image: blsq/iaso:latest
+    restart: always
+    command: manage tasks_worker
+    entrypoint: ./entrypoint.sh
+    links:
+      - db
+    depends_on:
+      - db
+    environment:
+      PREPAREDNESS_TEMPLATE_ID:
+      PREPAREDNESS_TEMPLATE_FR_ID:
+      PLUGINS:
+      FAVICON_PATH:
+      LOGO_PATH:
+      APP_TITLE:
+      GOOGLE_API_KEY_BASE64:
+      THEME_PRIMARY_COLOR:
+      THEME_SECONDARY_COLOR:
+      THEME_PRIMARY_BACKGROUND_COLOR:
+      USE_S3: "true"
+      AWS_STORAGE_BUCKET_NAME: iaso-prod
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
+      AWS_S3_ENDPOINT_URL: ${MINIO_URL}
+      IASO_ENVIRONMENT: "production"
+      RDS_HOSTNAME: ${IASO_DB_HOST:-db}
+      RDS_DB_NAME: ${IASO_DB_NAME}
+      RDS_USERNAME: ${IASO_DB_USER}
+      RDS_PASSWORD: ${IASO_DB_PASSWORD}
+      DB_READONLY_USERNAME: ${IASO_DB_USER}
+      DB_READONLY_PASSWORD: ${IASO_DB_PASSWORD}
+      SECRET_KEY: ${IASO_SECRET_KEY}
+      ENKETO_API_TOKEN: ${ENKETO_API_TOKEN}
+      ENKETO_URL: ${ENKETO_URL}
+      DATABASE_URL: postgres://${IASO_DB_USER}:${IASO_DB_PASSWORD}@${IASO_DB_HOST:-db}/${IASO_DB_NAME}
+      BACKGROUND_TASK_SERVICE: POSTGRES
+    networks:
+      - proxy
+      - default
 
 networks:
   proxy:
