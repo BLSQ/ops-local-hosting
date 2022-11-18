@@ -43,7 +43,7 @@ services:
       DB_READONLY_USERNAME: ${IASO_DB_USER}
       DB_READONLY_PASSWORD: ${IASO_DB_PASSWORD}
       SECRET_KEY: ${IASO_SECRET_KEY}
-      ENKETO_API_TOKEN: ${ENKETO_API_KEY}
+      ENKETO_API_TOKEN: ${ENKETO_API_TOKEN}
       ENKETO_URL: ${ENKETO_URL}
     entrypoint: ./entrypoint.sh
     command: start

@@ -52,6 +52,22 @@
         src: "docker/enketo/config/config.json"
         dest: "/srv/docker/enketo/config/config.json"
 
+    - name: "create directory for enketo"
+      file:
+        path: "/srv/docker/enketo/build"
+        state: directory
+        recurse: yes
+
+    - name: "deploying enketo build files"
+      template:
+        src: "docker/enketo/build/create_config.py"
+        dest: "/srv/docker/enketo/build/create_config.py"
+
+    - name: "deploying enketo build files 2"
+      template:
+        src: "docker/enketo/build/Dockerfile"
+        dest: "/srv/docker/enketo/build/Dockerfile"
+
 - hosts: iaso
   become: yes
   roles:

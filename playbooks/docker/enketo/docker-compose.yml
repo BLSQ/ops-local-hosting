@@ -2,7 +2,7 @@ version: "3"
 services:
   redis_main:
     image: redis:5
-    command: redis-server   
+    command: redis-server
     volumes:
       - ./storage/redis_main_data/:/data/
     restart: unless-stopped
@@ -15,19 +15,22 @@ services:
     restart: unless-stopped
 
   enketo-web:
-    image: "enketo/enketo-express:3.0.4"
+    build:
+      context: .
+      dockerfile: ./build/Dockerfile
     networks:
       - proxy
       - default
     ports:
-      - "8005:8005"
+      - "3000:3000"
     depends_on:
       - redis_main
       - redis_cache
     volumes:
       - ./config/config.json:/srv/src/enketo_express/config/config.json
-      - ./storage/secrets/:/srv/src/enketo_express/setup/docker/secrets/      
+      - ./storage/secrets/:/srv/src/enketo_express/setup/docker/secrets/
     environment:
+      - PORT=3000
       - ENKETO_VAR=yes
       - ENKETO_API_KEY=${ENKETO_API_KEY}
       - ENKETO_APP_NAME=Enketo for Iaso
@@ -39,14 +42,14 @@ services:
       - ENKETO_REDIS_CACHE_URL=redis://redis_cache:6379
       - ENKETO_REDIS_MAIN_URL=redis://redis_cache:6379
     labels:
-      - 'traefik.enable=true'
-      - 'traefik.docker.network=proxy'
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
 
-      - 'traefik.http.routers.enketo.entrypoints=websecure'
-      - 'traefik.http.routers.enketo.middlewares=no-auth-secured@file'
-      - 'traefik.http.routers.enketo.rule=Host(`enketo.${DOMAIN_NAME}`)'
-      - 'traefik.http.routers.enketo.tls.certresolver=lets-encrypt'
-      - 'traefik.http.routers.enketo.tls.options=mintls12@file'
+      - "traefik.http.routers.enketo.entrypoints=websecure"
+      - "traefik.http.routers.enketo.middlewares=no-auth-secured@file"
+      - "traefik.http.routers.enketo.rule=Host(`enketo.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.enketo.tls.certresolver=lets-encrypt"
+      - "traefik.http.routers.enketo.tls.options=mintls12@file"
 
       - "traefik.http.services.enketo.loadbalancer.passhostheader=true"
 
