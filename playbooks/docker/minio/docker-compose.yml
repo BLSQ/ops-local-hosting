@@ -2,39 +2,38 @@ version: "3.9"
 services:
   minio:
     image: minio/minio
-    command: server --console-address :9001 /data      
+    command: server --console-address :9001 /data
     ports:
       - "9000:9000"
     volumes:
       - ./storage/minio:/data
     networks:
-        - 'proxy'      
-        - 'default'
+      - "proxy"
+      - "default"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     labels:
-      - 'traefik.enable=true'
-      - 'traefik.docker.network=proxy'
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
 
-      - 'traefik.http.routers.minio.entrypoints=websecure'
-      - 'traefik.http.routers.minio.middlewares=no-auth-secured@file'
-      - 'traefik.http.routers.minio.rule=Host(`minio.${DOMAIN_NAME}`)'
-      - 'traefik.http.routers.minio.tls.certresolver=lets-encrypt'
-      - 'traefik.http.routers.minio.tls.options=mintls12@file'
+      - "traefik.http.routers.minio.entrypoints=websecure"
+      - "traefik.http.routers.minio.middlewares=no-auth-secured@file"
+      - "traefik.http.routers.minio.rule=Host(`minio.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.minio.tls.certresolver=lets-encrypt"
+      - "traefik.http.routers.minio.tls.options=mintls12@file"
       - "traefik.http.routers.minio.service=minio"
-      - 'traefik.http.services.minio.loadbalancer.server.port=9000'
+      - "traefik.http.services.minio.loadbalancer.server.port=9000"
       - "traefik.http.services.minio.loadbalancer.passhostheader=true"
 
-      - 'traefik.http.routers.minio-ui.entrypoints=websecure'
-      - 'traefik.http.routers.minio-ui.middlewares=no-auth-secured@file'
-      - 'traefik.http.routers.minio-ui.rule=Host(`minio-admin.${DOMAIN_NAME}`)'
-      - 'traefik.http.routers.minio-ui.tls.certresolver=lets-encrypt'
-      - 'traefik.http.routers.minio-ui.tls.options=mintls12@file'
+      - "traefik.http.routers.minio-ui.entrypoints=websecure"
+      - "traefik.http.routers.minio-ui.middlewares=no-auth-secured@file"
+      - "traefik.http.routers.minio-ui.rule=Host(`minio-admin.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.minio-ui.tls.certresolver=lets-encrypt"
+      - "traefik.http.routers.minio-ui.tls.options=mintls12@file"
       - "traefik.http.routers.minio-ui.service=minio-ui"
-      - 'traefik.http.services.minio-ui.loadbalancer.server.port=9001'
+      - "traefik.http.services.minio-ui.loadbalancer.server.port=9001"
       - "traefik.http.services.minio-ui.loadbalancer.passhostheader=true"
-    
 
   minio-buckets:
     image: minio/mc
@@ -42,15 +41,19 @@ services:
       - minio
     entrypoint: >
       /bin/sh -c "
-      echo CONFIG HOST;
+      echo CONFIG HOST alias;
       /usr/bin/mc config host add --api s3v4 hesabu-minio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
-      echo make bucket;
+      echo make buckets;
       /usr/bin/mc mb hesabu-minio/simulation;
+      /usr/bin/mc mb hesabu-minio/iaso-prod;
       echo make policy;
       /usr/bin/mc policy set download hesabu-minio/simulation;
+      /usr/bin/mc policy set download hesabu-minio/iaso-prod;
+      /usr/bin/mc anonymous set download localhostminio/iaso-prod/iasostatics/
+      /usr/bin/mc anonymous set public localhostminio/iaso-prod/iasostatics/
       exit 0;
-      "      
+      "
 
 networks:
   proxy:
-    external: true      
+    external: true

@@ -1,0 +1,115 @@
+---
+- hosts: iaso
+  become: yes
+  tasks:
+    - name: Create Docker clean up cron job.
+      cron:
+        name: "docker disk clean up"
+        job: "docker system prune -af > /dev/null 2>&1"
+        minute: "0"
+        hour: "0"
+        day: "*"
+        month: "*"
+        weekday: "0"
+    - name: install pip3
+      apt: name=python3-pip state=present update-cache=yes
+    - name: Install latest passlib with pip
+      pip: name=passlib
+    - name: Install apache2-utils
+      apt: name=apache2-utils
+    - name: "create directory for traefik"
+      file:
+        path: "/srv/docker/traefik/traefik"
+        state: directory
+        recurse: yes
+    - name: "deploying traefik config file"
+      template:
+        src: "docker/traefik/dynamic.yml"
+        dest: "/srv/docker/traefik/traefik/dynamic.yml"
+        force: yes
+    - name: Generate passwd file for traefik
+      community.general.htpasswd:
+        path: "/srv/docker/traefik/.htpasswd"
+        name: "{{TRAEFIK_USER}}"
+        password: "{{TRAEFIK_PWD}}"
+        state: present
+    - name: "create directory for portainer"
+      file:
+        path: "/srv/docker/portainer"
+        state: directory
+        recurse: yes
+    - name: Generate passwd file for portainer
+      shell: htpasswd -nb -B {{TRAEFIK_USER}} {{TRAEFIK_PWD}} | sed -e s/\\$/\\$\\$/g | cut -d ":" -f 2 | tr -d '\n' > /srv/docker/portainer/.htpasswd
+
+    - name: "create directory for enketo"
+      file:
+        path: "/srv/docker/enketo/config"
+        state: directory
+        recurse: yes
+
+    - name: "deploying enketo config file"
+      template:
+        src: "docker/enketo/config/config.json"
+        dest: "/srv/docker/enketo/config/config.json"
+
+    - name: "create directory for enketo"
+      file:
+        path: "/srv/docker/enketo/build"
+        state: directory
+        recurse: yes
+
+    - name: "deploying enketo build files"
+      template:
+        src: "docker/enketo/build/create_config.py"
+        dest: "/srv/docker/enketo/build/create_config.py"
+
+    - name: "deploying enketo build files 2"
+      template:
+        src: "docker/enketo/build/Dockerfile"
+        dest: "/srv/docker/enketo/build/Dockerfile"
+
+- hosts: iaso
+  become: yes
+  roles:
+    - ../roles/docker-compose-systemd
+  vars:
+    docker_services:
+      - name: minio
+        enabled: yes
+        need_restart: yes
+        root_dir: /srv/docker/minio
+        compose_template: docker/minio/docker-compose.yml
+        env_template: docker/iaso.env
+        unit_template: docker-compose/compose-unit.j2
+
+      - name: iaso
+        enabled: yes
+        need_restart: yes
+        root_dir: /srv/docker/iaso
+        compose_template: docker/iaso/docker-compose.yml
+        env_template: docker/iaso.env
+        unit_template: docker-compose/compose-unit.j2
+
+      - name: enketo
+        enabled: yes
+        need_restart: yes
+        root_dir: /srv/docker/enketo
+        compose_template: docker/enketo/docker-compose.yml
+        env_template: docker/enketo.env
+        unit_template: docker-compose/compose-unit.j2
+
+      - name: traefik
+        enabled: yes
+        need_restart: yes
+        root_dir: /srv/docker/traefik
+        compose_template: docker/traefik/docker-compose.yml
+        env_template: docker/traefik.env
+        unit_template: docker-compose/compose-unit.j2
+
+      - name: netdata
+        enabled: yes
+        need_restart: yes
+        root_dir: /srv/docker/netdata
+        compose_template: docker/netdata/docker-compose.yml
+        env_template: docker/netdata.env
+        unit_template: docker-compose/compose-unit.j2
