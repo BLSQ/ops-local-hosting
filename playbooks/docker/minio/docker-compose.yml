@@ -17,6 +17,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
 
+{% if TLS_ENABLED %}     
       - "traefik.http.routers.minio.entrypoints=websecure"
       - "traefik.http.routers.minio.middlewares=no-auth-secured@file"
       - "traefik.http.routers.minio.rule=Host(`minio.${DOMAIN_NAME}`)"
@@ -34,6 +35,21 @@ services:
       - "traefik.http.routers.minio-ui.service=minio-ui"
       - "traefik.http.services.minio-ui.loadbalancer.server.port=9001"
       - "traefik.http.services.minio-ui.loadbalancer.passhostheader=true"
+{% else %}
+      - "traefik.http.routers.minio.entrypoints=web"
+      - "traefik.http.routers.minio.middlewares=no-auth-secured@file"
+      - "traefik.http.routers.minio.rule=Host(`minio.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.minio.service=minio"
+      - "traefik.http.services.minio.loadbalancer.server.port=9000"
+      - "traefik.http.services.minio.loadbalancer.passhostheader=true"
+
+      - "traefik.http.routers.minio-ui.entrypoints=web"
+      - "traefik.http.routers.minio-ui.middlewares=no-auth-secured@file"
+      - "traefik.http.routers.minio-ui.rule=Host(`minio-admin.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.minio-ui.service=minio-ui"
+      - "traefik.http.services.minio-ui.loadbalancer.server.port=9001"
+      - "traefik.http.services.minio-ui.loadbalancer.passhostheader=true"
+{% endif %}
 
   minio-buckets:
     image: minio/mc

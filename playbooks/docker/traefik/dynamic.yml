@@ -27,7 +27,9 @@ http:
           X-Frame-Options: "deny"
           X-Content-Type-Options: "nosniff"
           Referrer-Policy: "same-origin"
+{% if TLS_ENABLED %}          
           sslRedirect: true
+{% endif %}
 
     portal-service-secure-headers:
       headers:

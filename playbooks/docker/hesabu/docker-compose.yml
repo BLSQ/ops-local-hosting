@@ -43,13 +43,17 @@ services:
     labels:
       - 'traefik.enable=true'
       - 'traefik.docker.network=proxy'
-
+{% if TLS_ENABLED %}
       - 'traefik.http.routers.hesabu.entrypoints=websecure'
       - 'traefik.http.routers.hesabu.middlewares=no-auth-secured@file'
       - 'traefik.http.routers.hesabu.rule=Host(`hesabu.${DOMAIN_NAME}`)'
       - 'traefik.http.routers.hesabu.tls.certresolver=lets-encrypt'
       - 'traefik.http.routers.hesabu.tls.options=mintls12@file'
-
+{% else %}
+      - 'traefik.http.routers.hesabu.entrypoints=web'
+      - 'traefik.http.routers.hesabu.middlewares=no-auth-secured@file'
+      - 'traefik.http.routers.hesabu.rule=Host(`hesabu.${DOMAIN_NAME}`)'
+{% endif %}
       - "traefik.http.services.hesabu.loadbalancer.passhostheader=true"
 
       - "ofelia.enabled=true"

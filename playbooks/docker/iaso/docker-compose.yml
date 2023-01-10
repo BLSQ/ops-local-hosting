@@ -47,6 +47,10 @@ services:
       ENKETO_URL: ${ENKETO_URL}
       DATABASE_URL: postgres://${IASO_DB_USER}:${IASO_DB_PASSWORD}@${IASO_DB_HOST:-db}/${IASO_DB_NAME}
       BACKGROUND_TASK_SERVICE: POSTGRES
+{% if TLS_ENABLED %}      
+{% else %}
+      DISABLE_SSL_REDIRECT: 1
+{% endif %}
     entrypoint: ./entrypoint.sh
     command: start
     networks:
@@ -54,15 +58,18 @@ services:
       - default
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=proxy"
-
-      - "traefik.http.routers.hesabu.entrypoints=websecure"
-      - "traefik.http.routers.hesabu.middlewares=no-auth-secured@file"
-      - "traefik.http.routers.hesabu.rule=Host(`iaso.${DOMAIN_NAME}`)"
-      - "traefik.http.routers.hesabu.tls.certresolver=lets-encrypt"
-      - "traefik.http.routers.hesabu.tls.options=mintls12@file"
-
-      - "traefik.http.services.hesabu.loadbalancer.passhostheader=true"
+      - "traefik.docker.network=proxy"      
+{% if TLS_ENABLED %}
+      - "traefik.http.routers.iaso.entrypoints=websecure"
+      - "traefik.http.routers.iaso.middlewares=no-auth-secured@file"
+      - "traefik.http.routers.iaso.rule=Host(`iaso.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.iaso.tls.certresolver=lets-encrypt"
+      - "traefik.http.routers.iaso.tls.options=mintls12@file"
+{% else %}
+      - "traefik.http.routers.iaso.rule=Host(`iaso.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.iaso.entrypoints=web"
+{% endif %}
+      - "traefik.http.services.iaso.loadbalancer.passhostheader=true"
 
   iaso-worker:
     image: blsq/iaso:latest
