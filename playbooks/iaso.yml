@@ -102,7 +102,7 @@
         enabled: yes
         need_restart: yes
         root_dir: /srv/docker/traefik
-        compose_template: docker/traefik/docker-compose.yml
+        compose_template: "docker/traefik/docker-compose-tls-{{TLS_ENABLED}}.yml"
         env_template: docker/traefik.env
         unit_template: docker-compose/compose-unit.j2
 

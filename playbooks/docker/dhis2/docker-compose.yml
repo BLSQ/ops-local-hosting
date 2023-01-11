@@ -15,13 +15,17 @@ services:
     labels:
       - 'traefik.enable=true'
       - 'traefik.docker.network=proxy'
-
+{% if TLS_ENABLED %}  
       - 'traefik.http.routers.dhis2.entrypoints=websecure'
       - 'traefik.http.routers.dhis2.middlewares=no-auth-secured@file'
       - 'traefik.http.routers.dhis2.rule=Host(`${DOMAIN_NAME}`)'
       - 'traefik.http.routers.dhis2.tls.certresolver=lets-encrypt'
       - 'traefik.http.routers.dhis2.tls.options=mintls12@file'
-
+{% else %}
+      - 'traefik.http.routers.dhis2.entrypoints=web'
+      - 'traefik.http.routers.dhis2.middlewares=no-auth-secured@file'
+      - 'traefik.http.routers.dhis2.rule=Host(`${DOMAIN_NAME}`)'
+{% endif %}
       - "traefik.http.services.dhis2.loadbalancer.passhostheader=true"
 networks:
   proxy:
