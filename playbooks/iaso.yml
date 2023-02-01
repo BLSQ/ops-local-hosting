@@ -40,29 +40,24 @@
         recurse: yes
     - name: Generate passwd file for portainer
       shell: htpasswd -nb -B {{TRAEFIK_USER}} {{TRAEFIK_PWD}} | sed -e s/\\$/\\$\\$/g | cut -d ":" -f 2 | tr -d '\n' > /srv/docker/portainer/.htpasswd
-
     - name: "create directory for enketo"
       file:
         path: "/srv/docker/enketo/config"
         state: directory
         recurse: yes
-
     - name: "deploying enketo config file"
       template:
         src: "docker/enketo/config/config.json"
         dest: "/srv/docker/enketo/config/config.json"
-
     - name: "create directory for enketo"
       file:
         path: "/srv/docker/enketo/build"
         state: directory
         recurse: yes
-
     - name: "deploying enketo build files"
       template:
         src: "docker/enketo/build/create_config.py"
         dest: "/srv/docker/enketo/build/create_config.py"
-
     - name: "deploying enketo build files 2"
       template:
         src: "docker/enketo/build/Dockerfile"
@@ -73,7 +68,7 @@
   roles:
     - ../roles/docker-compose-systemd
   vars:
-    docker_services:
+    - all_docker_services:
       - name: minio
         enabled: yes
         need_restart: yes
@@ -81,7 +76,7 @@
         compose_template: docker/minio/docker-compose.yml
         env_template: docker/iaso.env
         unit_template: docker-compose/compose-unit.j2
-
+        used_by: "iaso dataviz hesabu"
       - name: iaso
         enabled: yes
         need_restart: yes
@@ -89,7 +84,7 @@
         compose_template: docker/iaso/docker-compose.yml
         env_template: docker/iaso.env
         unit_template: docker-compose/compose-unit.j2
-
+        used_by: "iaso"
       - name: enketo
         enabled: yes
         need_restart: yes
@@ -97,7 +92,15 @@
         compose_template: docker/enketo/docker-compose.yml
         env_template: docker/enketo.env
         unit_template: docker-compose/compose-unit.j2
-
+        used_by: "iaso"
+      - name: hesabu
+        enabled: yes
+        need_restart: yes
+        root_dir: /srv/docker/hesabu
+        compose_template: docker/hesabu/docker-compose.yml
+        env_template: docker/hesabu.env
+        unit_template: docker-compose/compose-unit.j2
+        used_by: "hesabu"
       - name: traefik
         enabled: yes
         need_restart: yes
@@ -105,7 +108,7 @@
         compose_template: "docker/traefik/docker-compose-tls-{{TLS_ENABLED}}.yml"
         env_template: docker/traefik.env
         unit_template: docker-compose/compose-unit.j2
-
+        used_by: "iaso dataviz hesabu"
       - name: netdata
         enabled: yes
         need_restart: yes
@@ -113,3 +116,5 @@
         compose_template: docker/netdata/docker-compose.yml
         env_template: docker/netdata.env
         unit_template: docker-compose/compose-unit.j2
+        used_by: "netdata"
+    - docker_services: "{{ all_docker_services | selectattr('used_by', 'match', blsq_products_regexp)}}"
