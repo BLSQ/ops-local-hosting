@@ -1,52 +1,52 @@
 version: "3.9"
 services:
   db:
-    image: postgres:${POSTGRES_VERSION}
+    image: postgres:${DATAVIZ_POSTGRES_VERSION}
     volumes:
       - ./storage/db:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${DATAVIZ_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${DATAVIZ_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${DATAVIZ_POSTGRES_DB}
 
   memcached:
     image: bitnami/memcached:latest
     environment:
       - MEMCACHED_USERNAME=memcached
-      - MEMCACHED_PASSWORD=${MEMCACHE_PASSWORD}
+      - MEMCACHED_PASSWORD=${DATAVIZ_MEMCACHE_PASSWORD}
 
   redis:
-    image: redis:${REDIS_VERSION}
-    command: redis-server --requirepass ${REDIS_PASSWORD}
+    image: redis:${DATAVIZ_REDIS_VERSION}
+    command: redis-server --requirepass ${DATAVIZ_REDIS_PASSWORD}
     volumes:
       - ./storage/redis:/data
 
   dataviz-backend:
-    image: blsq/dataviz-backend:${DATAVIZ_VERSION}
+    image: blsq/dataviz-backend:${DATAVIZ_BACKEND_VERSION}
     command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
     networks:
       - proxy
       - default
     ports:
-      - "3000:3000"
+      - "5000:3000"
     depends_on:
       - db
       - redis
     environment:
-      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
-      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - REDIS_URL=redis://:${DATAVIZ_REDIS_PASSWORD}@redis:6379
+      - DATABASE_URL=postgres://${DATAVIZ_POSTGRES_USER}:${DATAVIZ_POSTGRES_PASSWORD}@db:5432/${DATAVIZ_POSTGRES_DB}
+      - ADMIN_PASSWORD=${DATAVIZ_ADMIN_PASSWORD}
       - RAILS_ENV=production
       - DISABLE_FORCE_SSL=TRUE
       - RACK_ENV=production
-      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - SECRET_KEY_BASE=${DATAVIZ_SECRET_KEY_BASE}
       - RAILS_ACTIVE_STORAGE=minio
-      - AWS_ACCESS_KEY_ID=def
-      - AWS_SECRET_ACCESS_KEY=ghi
+      - AWS_ACCESS_KEY_ID=${MINIO_ROOT_USER}
+      - AWS_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD}
       - RAILS_SERVE_STATIC_FILES=true
       - MEMCACHIER_SERVERS=memcached:11211
       - MEMCACHIER_USERNAME=memcached
-      - MEMCACHIER_PASSWORD=${MEMCACHE_PASSWORD}
+      - MEMCACHIER_PASSWORD=${DATAVIZ_MEMCACHE_PASSWORD}
     labels:
       - 'traefik.enable=true'
       - 'traefik.docker.network=proxy'
@@ -82,7 +82,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:rw
 
   dataviz-front:
-    image: blsq/dataviz-front:${DATAVIZ_VERSION}
+    image: blsq/dataviz-front:${DATAVIZ_FRONT_VERSION}
+    volumes:
+      - ./config/front:/usr/share/nginx/html/bootstrap-data:ro
     networks:
       - proxy
       - default
@@ -104,23 +106,23 @@ services:
       - "traefik.http.services.dataviz-front.loadbalancer.passhostheader=true"
 
   dataviz-worker:
-    image: blsq/dataviz-backend:${DATAVIZ_VERSION}
+    image: blsq/dataviz-backend:${DATAVIZ_BACKEND_VERSION}
     command: bash -c "bundle exec sidekiq -c 5"
     depends_on:
       - db
       - redis
     environment:
-      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
-      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - REDIS_URL=redis://:${DATAVIZ_REDIS_PASSWORD}@redis:6379
+      - DATABASE_URL=postgres://${DATAVIZ_POSTGRES_USER}:${DATAVIZ_POSTGRES_PASSWORD}@db:5432/${DATAVIZ_POSTGRES_DB}
+      - ADMIN_PASSWORD=${DATAVIZ_ADMIN_PASSWORD}
       - RAILS_ENV=production
       - DISABLE_FORCE_SSL=TRUE
       - RACK_ENV=production
-      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - SECRET_KEY_BASE=${DATAVIZ_SECRET_KEY_BASE}
       - RAILS_ACTIVE_STORAGE=minio
       - RAILS_SERVE_STATIC_FILES=1
-      - AWS_ACCESS_KEY_ID=def
-      - AWS_SECRET_ACCESS_KEY=ghi
+      - AWS_ACCESS_KEY_ID=${MINIO_ROOT_USER}
+      - AWS_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD}
 networks:
   proxy:
     external: true

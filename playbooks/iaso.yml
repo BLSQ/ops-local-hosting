@@ -62,6 +62,15 @@
       template:
         src: "docker/enketo/build/Dockerfile"
         dest: "/srv/docker/enketo/build/Dockerfile"
+    - name: "create directory for dataviz"
+      file:
+        path: "/srv/docker/dataviz/config/front"
+        state: directory
+        recurse: yes
+    - name: "deploying dataviz config file"
+      template:
+        src: "docker/dataviz/config/front/env.json"
+        dest: "/srv/docker/dataviz/config/front/env.json"
 
 - hosts: iaso
   become: yes
@@ -74,7 +83,7 @@
         need_restart: yes
         root_dir: /srv/docker/minio
         compose_template: docker/minio/docker-compose.yml
-        env_template: docker/iaso.env
+        env_template: docker/minio.env
         unit_template: docker-compose/compose-unit.j2
         used_by: "iaso dataviz hesabu"
       - name: iaso
@@ -101,6 +110,14 @@
         env_template: docker/hesabu.env
         unit_template: docker-compose/compose-unit.j2
         used_by: "hesabu"
+      - name: dataviz
+        enabled: yes
+        need_restart: yes
+        root_dir: /srv/docker/dataviz
+        compose_template: docker/dataviz/docker-compose.yml
+        env_template: docker/dataviz.env
+        unit_template: docker-compose/compose-unit.j2
+        used_by: "dataviz"
       - name: traefik
         enabled: yes
         need_restart: yes
