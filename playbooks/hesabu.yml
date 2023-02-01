@@ -1,5 +1,4 @@
 ---
-
 - hosts: hesabu
   become: yes
   tasks:
@@ -11,13 +10,13 @@
         hour: "0"
         day: "*"
         month: "*"
-        weekday: "0"  
+        weekday: "0"
     - name: install pip3
-      apt: name=python3-pip state=present update-cache=yes 
+      apt: name=python3-pip state=present update-cache=yes
     - name: Install latest passlib with pip
-      pip: name=passlib  
+      pip: name=passlib
     - name: Install apache2-utils
-      apt: name=apache2-utils  
+      apt: name=apache2-utils
     - name: "create directory for traefik"
       file:
         path: "/srv/docker/traefik/traefik"
@@ -42,42 +41,32 @@
     - name: Generate passwd file for portainer
       shell: htpasswd -nb -B {{TRAEFIK_USER}} {{TRAEFIK_PWD}} | sed -e s/\\$/\\$\\$/g | cut -d ":" -f 2 | tr -d '\n' > /srv/docker/portainer/.htpasswd
 
- 
-
 - hosts: hesabu
   become: yes
   roles:
-      - ../roles/docker-compose-systemd
+    - ../roles/docker-compose-systemd
   vars:
-      docker_services:
+    docker_services:
       - name: hesabu
         enabled: yes
         need_restart: yes
         root_dir: /srv/docker/hesabu
         compose_template: docker/hesabu/docker-compose.yml
-        env_template: docker/.env
+        env_template: docker/hesabu.env
         unit_template: docker-compose/compose-unit.j2
-        
+
       - name: minio
         enabled: yes
         need_restart: yes
         root_dir: /srv/docker/minio
         compose_template: docker/minio/docker-compose.yml
-        env_template: docker/.env
+        env_template: docker/hesabu.env
         unit_template: docker-compose/compose-unit.j2
 
       - name: traefik
         enabled: yes
         need_restart: yes
         root_dir: /srv/docker/traefik
-        compose_template: docker/traefik/docker-compose.yml
-        env_template: docker/.env
+        compose_template: "docker/traefik/docker-compose-tls-{{TLS_ENABLED}}.yml"
+        env_template: docker/traefik.env
         unit_template: docker-compose/compose-unit.j2
-
-      - name: netdata
-        enabled: yes
-        need_restart: yes
-        root_dir: /srv/docker/netdata
-        compose_template: docker/netdata/docker-compose.yml
-        env_template: docker/.env
-        unit_template: docker-compose/compose-unit.j2             

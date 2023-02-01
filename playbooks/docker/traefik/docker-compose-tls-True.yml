@@ -120,3 +120,4 @@ networks:
 
 volumes:
   portainer-data:
+
