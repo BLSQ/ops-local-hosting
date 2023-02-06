@@ -43,7 +43,7 @@
         need_restart: yes
         root_dir: /srv/docker/minio
         compose_template: docker/minio/docker-compose.yml
-        env_template: docker/feedback-loop.env
+        env_template: docker/minio.env
         unit_template: docker-compose/compose-unit.j2
 
       - name: feedback-loop
