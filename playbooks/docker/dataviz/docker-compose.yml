@@ -1,0 +1,128 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:${DATAVIZ_POSTGRES_VERSION}
+    volumes:
+      - ./storage/db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${DATAVIZ_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${DATAVIZ_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${DATAVIZ_POSTGRES_DB}
+
+  memcached:
+    image: bitnami/memcached:latest
+    environment:
+      - MEMCACHED_USERNAME=memcached
+      - MEMCACHED_PASSWORD=${DATAVIZ_MEMCACHE_PASSWORD}
+
+  redis:
+    image: redis:${DATAVIZ_REDIS_VERSION}
+    command: redis-server --requirepass ${DATAVIZ_REDIS_PASSWORD}
+    volumes:
+      - ./storage/redis:/data
+
+  dataviz-backend:
+    image: blsq/dataviz-backend:${DATAVIZ_BACKEND_VERSION}
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
+    networks:
+      - proxy
+      - default
+    ports:
+      - "5000:3000"
+    depends_on:
+      - db
+      - redis
+    environment:
+      - REDIS_URL=redis://:${DATAVIZ_REDIS_PASSWORD}@redis:6379
+      - DATABASE_URL=postgres://${DATAVIZ_POSTGRES_USER}:${DATAVIZ_POSTGRES_PASSWORD}@db:5432/${DATAVIZ_POSTGRES_DB}
+      - ADMIN_PASSWORD=${DATAVIZ_ADMIN_PASSWORD}
+      - RAILS_ENV=production
+      - DISABLE_FORCE_SSL=TRUE
+      - RACK_ENV=production
+      - SECRET_KEY_BASE=${DATAVIZ_SECRET_KEY_BASE}
+      - RAILS_ACTIVE_STORAGE=minio
+      - AWS_ACCESS_KEY_ID=${MINIO_ROOT_USER}
+      - AWS_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD}
+      - RAILS_SERVE_STATIC_FILES=true
+      - MEMCACHIER_SERVERS=memcached:11211
+      - MEMCACHIER_USERNAME=memcached
+      - MEMCACHIER_PASSWORD=${DATAVIZ_MEMCACHE_PASSWORD}
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=proxy'
+{% if TLS_ENABLED %}
+      - 'traefik.http.routers.dataviz.entrypoints=websecure'
+      - 'traefik.http.routers.dataviz.middlewares=no-auth-secured@file'
+      - 'traefik.http.routers.dataviz.rule=Host(`dataviz-backend.${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.dataviz.tls.certresolver=lets-encrypt'
+      - 'traefik.http.routers.dataviz.tls.options=mintls12@file'
+{% else %}
+      - 'traefik.http.routers.dataviz.entrypoints=web'
+      - 'traefik.http.routers.dataviz.middlewares=no-auth-secured@file'
+      - 'traefik.http.routers.dataviz.rule=Host(`dataviz-backend.${DOMAIN_NAME}`)'
+{% endif %}
+      - "traefik.http.services.dataviz.loadbalancer.passhostheader=true"
+
+      - "ofelia.enabled=true"
+      # Warm up the cache, every night at 1 (golang cron syntax)
+      - "ofelia.job-exec.cache-warmup.schedule=0 0 1 * * *"
+      - "ofelia.job-exec.cache-warmup.command=bundle exec rake cache_warmup:run"
+      # Excel exports at 4 am
+      - "ofelia.job-exec.duplicate_jobs.schedule=0 0 4 * * *"
+      - "ofelia.job-exec.duplicate_jobs.command=bundle exec rake sheet_export:run"
+      # Clean up the cache at noon
+      - "ofelia.job-exec.duplicate_jobs.schedule=0 0 12 * * *"
+      - "ofelia.job-exec.duplicate_jobs.command=bundle exec rake cache_warmup:cleanup"
+
+  ofelia:
+    image: mcuadros/ofelia:latest
+    restart: always
+    command: daemon --docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+
+  dataviz-front:
+    image: blsq/dataviz-front:${DATAVIZ_FRONT_VERSION}
+    volumes:
+      - ./config/front:/usr/share/nginx/html/bootstrap-data:ro
+    networks:
+      - proxy
+      - default
+    ports:
+      - "8123:80"
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=proxy'
+{% if TLS_ENABLED %}
+      - "traefik.http.routers.dataviz-front.entrypoints=websecure"
+      - "traefik.http.routers.dataviz-front.middlewares=no-auth-secured@file"
+      - "traefik.http.routers.dataviz-front.rule=Host(`dataviz.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.dataviz-front.tls.certresolver=lets-encrypt"
+      - "traefik.http.routers.dataviz-front.tls.options=mintls12@file"
+{% else %}
+      - "traefik.http.routers.dataviz-front.rule=Host(`dataviz.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.dataviz-front.entrypoints=web"
+{% endif %}
+      - "traefik.http.services.dataviz-front.loadbalancer.passhostheader=true"
+
+  dataviz-worker:
+    image: blsq/dataviz-backend:${DATAVIZ_BACKEND_VERSION}
+    command: bash -c "bundle exec sidekiq -c 5"
+    depends_on:
+      - db
+      - redis
+    environment:
+      - REDIS_URL=redis://:${DATAVIZ_REDIS_PASSWORD}@redis:6379
+      - DATABASE_URL=postgres://${DATAVIZ_POSTGRES_USER}:${DATAVIZ_POSTGRES_PASSWORD}@db:5432/${DATAVIZ_POSTGRES_DB}
+      - ADMIN_PASSWORD=${DATAVIZ_ADMIN_PASSWORD}
+      - RAILS_ENV=production
+      - DISABLE_FORCE_SSL=TRUE
+      - RACK_ENV=production
+      - SECRET_KEY_BASE=${DATAVIZ_SECRET_KEY_BASE}
+      - RAILS_ACTIVE_STORAGE=minio
+      - RAILS_SERVE_STATIC_FILES=1
+      - AWS_ACCESS_KEY_ID=${MINIO_ROOT_USER}
+      - AWS_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD}
+networks:
+  proxy:
+    external: true
