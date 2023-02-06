@@ -1,0 +1,68 @@
+version: "3.3"
+services:
+  db:
+    image: postgres:${FEEDBACK_POSTGRES_VERSION}
+    volumes:
+      - ./storage/db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${FEEDBACK_POSTGRES_DB}
+      POSTGRES_USER: ${FEEDBACK_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${FEEDBACK_POSTGRES_PASSWORD}
+
+  redis:
+    image: redis:${FEEDBACK_REDIS_VERSION}
+    command: redis-server --requirepass ${FEEDBACK_REDIS_PASSWORD}
+    volumes:
+      - ./storage/redis:/data
+
+  feedback-backend:
+    image: blsq/feedback-backend:${FEEDBACK_BACKEND_VERSION}
+    command: bash -c "npx prisma migrate reset --force && npx prisma db push && npm start"
+    environment:
+      PORT: 8000
+      DATABASE_URL: postgres://${FEEDBACK_POSTGRES_USER}:${FEEDBACK_POSTGRES_PASSWORD}@db:5432/${FEEDBACK_POSTGRES_DB}
+      REDIS_URL: redis://:${FEEDBACK_REDIS_PASSWORD}@redis:6379
+      DB_USERNAME: ${FEEDBACK_POSTGRES_DB}
+      DB_PASSWORD: ${FEEDBACK_POSTGRES_PASSWORD}
+      BUCKET_KEY: ${FEEDBACK_BUCKET_KEY}
+      ACCESS_KEY_ID: ${MINIO_ROOT_USER}
+      SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
+      ADMIN_PASSWORD: ${FEEDBACK_ADMIN_PASSWORD}
+      PUPPETER_TIME_OUT: 405000
+      SMTP_LOGIN: 
+      SMTP_PASSWORD:
+      SMTP_PORT:
+      SMTP_SERVER: smtp.mailgun.org
+      FEEDBACK_SENDER: 
+      TEST_EMAIL: 
+      APP_FILE: 
+      DEFAULT_THEME: 
+    ports:
+      - "6000:8000"
+    depends_on:
+      - db
+      - redis
+
+  feedback-worker:
+    image: blsq/feedback-backend:${FEEDBACK_BACKEND_VERSION}
+    command: bash -c "node server/workers/worker.js"
+    depends_on:
+      - db
+      - redis
+    environment:
+      REDIS_URL: redis://:${FEEDBACK_REDIS_PASSWORD}@redis:6379
+      DATABASE_URL: postgres://${FEEDBACK_POSTGRES_USER}:${FEEDBACK_POSTGRES_PASSWORD}@db:5432/${FEEDBACK_POSTGRES_DB}
+      ADMIN_PASSWORD: ${FEEDBACK_ADMIN_PASSWORD}
+
+  feedback-front:
+    image: blsq/feedback-front:${FEEDBACK_FRONT_VERSION}
+    ports:
+      - "6001:3000"
+    stdin_open: true
+    environment:
+      REACT_APP_DHIS2_URL: ${FEEDBACK_REACT_APP_DHIS2_URL}
+      REACT_APP_USER: ${FEEDBACK_REACT_APP_USER}
+      REACT_APP_PASSWORD: ${FEEDBACK_REACT_APP_PASSWORD}
+      REACT_APP_TOKEN_NAME: ${FEEDBACK_REACT_APP_TOKEN_NAME}
+      REACT_APP_API_URL: ${FEEDBACK_REACT_APP_API_URL}
+      REACT_APP_URL: ${FEEDBACK_REACT_APP_URL}
