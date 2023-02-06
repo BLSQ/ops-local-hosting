@@ -1,5 +1,6 @@
 ---
 - hosts: iaso
+  tags: setup
   become: yes
   tasks:
     - name: Create Docker clean up cron job.
@@ -71,6 +72,7 @@
       template:
         src: "docker/dataviz/config/front/env.json"
         dest: "/srv/docker/dataviz/config/front/env.json"
+
 
 - hosts: iaso
   become: yes
