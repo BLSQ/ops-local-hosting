@@ -73,67 +73,74 @@
         src: "docker/dataviz/config/front/env.json"
         dest: "/srv/docker/dataviz/config/front/env.json"
 
-
 - hosts: iaso
   become: yes
   roles:
     - ../roles/docker-compose-systemd
   vars:
     - all_docker_services:
-      - name: minio
-        enabled: yes
-        need_restart: yes
-        root_dir: /srv/docker/minio
-        compose_template: docker/minio/docker-compose.yml
-        env_template: docker/minio.env
-        unit_template: docker-compose/compose-unit.j2
-        used_by: "iaso dataviz hesabu"
-      - name: iaso
-        enabled: yes
-        need_restart: yes
-        root_dir: /srv/docker/iaso
-        compose_template: docker/iaso/docker-compose.yml
-        env_template: docker/iaso.env
-        unit_template: docker-compose/compose-unit.j2
-        used_by: "iaso"
-      - name: enketo
-        enabled: yes
-        need_restart: yes
-        root_dir: /srv/docker/enketo
-        compose_template: docker/enketo/docker-compose.yml
-        env_template: docker/enketo.env
-        unit_template: docker-compose/compose-unit.j2
-        used_by: "iaso"
-      - name: hesabu
-        enabled: yes
-        need_restart: yes
-        root_dir: /srv/docker/hesabu
-        compose_template: docker/hesabu/docker-compose.yml
-        env_template: docker/hesabu.env
-        unit_template: docker-compose/compose-unit.j2
-        used_by: "hesabu"
-      - name: dataviz
-        enabled: yes
-        need_restart: yes
-        root_dir: /srv/docker/dataviz
-        compose_template: docker/dataviz/docker-compose.yml
-        env_template: docker/dataviz.env
-        unit_template: docker-compose/compose-unit.j2
-        used_by: "dataviz"
-      - name: traefik
-        enabled: yes
-        need_restart: yes
-        root_dir: /srv/docker/traefik
-        compose_template: "docker/traefik/docker-compose-tls-{{TLS_ENABLED}}.yml"
-        env_template: docker/traefik.env
-        unit_template: docker-compose/compose-unit.j2
-        used_by: "iaso dataviz hesabu"
-      - name: netdata
-        enabled: yes
-        need_restart: yes
-        root_dir: /srv/docker/netdata
-        compose_template: docker/netdata/docker-compose.yml
-        env_template: docker/netdata.env
-        unit_template: docker-compose/compose-unit.j2
-        used_by: "netdata"
+        - name: minio
+          enabled: yes
+          need_restart: yes
+          root_dir: /srv/docker/minio
+          compose_template: docker/minio/docker-compose.yml
+          env_template: docker/minio.env
+          unit_template: docker-compose/compose-unit.j2
+          used_by: "iaso dataviz hesabu d2d"
+        - name: iaso
+          enabled: yes
+          need_restart: yes
+          root_dir: /srv/docker/iaso
+          compose_template: docker/iaso/docker-compose.yml
+          env_template: docker/iaso.env
+          unit_template: docker-compose/compose-unit.j2
+          used_by: "iaso"
+        - name: enketo
+          enabled: yes
+          need_restart: yes
+          root_dir: /srv/docker/enketo
+          compose_template: docker/enketo/docker-compose.yml
+          env_template: docker/enketo.env
+          unit_template: docker-compose/compose-unit.j2
+          used_by: "iaso"
+        - name: hesabu
+          enabled: yes
+          need_restart: yes
+          root_dir: /srv/docker/hesabu
+          compose_template: docker/hesabu/docker-compose.yml
+          env_template: docker/hesabu.env
+          unit_template: docker-compose/compose-unit.j2
+          used_by: "hesabu"
+        - name: dataviz
+          enabled: yes
+          need_restart: yes
+          root_dir: /srv/docker/dataviz
+          compose_template: docker/dataviz/docker-compose.yml
+          env_template: docker/dataviz.env
+          unit_template: docker-compose/compose-unit.j2
+          used_by: "dataviz"
+        - name: d2d
+          enabled: yes
+          need_restart: yes
+          root_dir: /srv/docker/d2d
+          compose_template: docker/d2d/docker-compose.yml
+          env_template: docker/d2d.env
+          unit_template: docker-compose/compose-unit.j2
+          used_by: "d2d"
+        - name: traefik
+          enabled: yes
+          need_restart: yes
+          root_dir: /srv/docker/traefik
+          compose_template: "docker/traefik/docker-compose-tls-{{TLS_ENABLED}}.yml"
+          env_template: docker/traefik.env
+          unit_template: docker-compose/compose-unit.j2
+          used_by: "iaso dataviz hesabu d2d"
+        - name: netdata
+          enabled: yes
+          need_restart: yes
+          root_dir: /srv/docker/netdata
+          compose_template: docker/netdata/docker-compose.yml
+          env_template: docker/netdata.env
+          unit_template: docker-compose/compose-unit.j2
+          used_by: "netdata"
     - docker_services: "{{ all_docker_services | selectattr('used_by', 'match', blsq_products_regexp)}}"
