@@ -49,8 +49,8 @@
       - name: feedback-loop
         enabled: yes
         need_restart: yes
-        root_dir: /srv/docker/iaso
-        compose_template: docker/iaso/docker-compose.yml
+        root_dir: /srv/docker/feedback-loop
+        compose_template: docker/feedback-loop/docker-compose.yml
         env_template: docker/feedback-loop.env
         unit_template: docker-compose/compose-unit.j2
 
@@ -58,7 +58,7 @@
         enabled: yes
         need_restart: yes
         root_dir: /srv/docker/traefik
-        compose_template: docker/traefik/docker-compose.yml
+        compose_template: "docker/traefik/docker-compose-tls-{{TLS_ENABLED}}.yml"
         env_template: docker/traefik.env
         unit_template: docker-compose/compose-unit.j2
 

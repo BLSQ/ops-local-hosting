@@ -42,6 +42,24 @@ services:
     depends_on:
       - db
       - redis
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=proxy'
+{% if TLS_ENABLED %}
+      - 'traefik.http.routers.netdata.entrypoints=websecure'
+      - 'traefik.http.routers.netdata.middlewares=basic-auth-secured@file'
+      - 'traefik.http.routers.netdata.rule=Host(`feedback.${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.netdata.tls.certresolver=lets-encrypt'
+      - 'traefik.http.routers.netdata.tls.options=mintls12@file'
+{% else %}
+      - 'traefik.http.routers.netdata.entrypoints=web'
+      - 'traefik.http.routers.netdata.middlewares=basic-auth-secured@file'
+      - 'traefik.http.routers.netdata.rule=Host(`feedback.${DOMAIN_NAME}`)'
+{% endif %}
+      - "traefik.http.services.netdata.loadbalancer.passhostheader=true" 
+    networks: 
+      - proxy
+      - default   
 
   feedback-worker:
     image: blsq/feedback-backend:${FEEDBACK_BACKEND_VERSION}
@@ -66,3 +84,7 @@ services:
       REACT_APP_TOKEN_NAME: ${FEEDBACK_REACT_APP_TOKEN_NAME}
       REACT_APP_API_URL: ${FEEDBACK_REACT_APP_API_URL}
       REACT_APP_URL: ${FEEDBACK_REACT_APP_URL}
+
+networks:
+  proxy:
+    external: true     
