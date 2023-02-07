@@ -21,6 +21,9 @@ services:
       - "9080:80"
     depends_on:
       - d2d-backend
+    networks:
+      - proxy
+      - default      
     environment:
       - D2D_BACKEND_URL=d2d-backend:3000
     labels:
@@ -111,3 +114,7 @@ services:
       - RAILS_SERVE_STATIC_FILES=true
       - MAILGUN_API_KEY=${D2D_MAILGUN_API_KEY}
       - MAILGUN_DOMAIN=${D2D_MAILGUN_DOMAIN}
+
+networks:
+  proxy:
+    external: true
