@@ -1,14 +1,32 @@
-# Procedure to setup a machine with "one of bluesquare products"
+# Procedure to setup a machine with "some bluesquare's products"
 
-This assume you will provide one or multiple machines to host the products.
+This assume you will provide one or multiple machines to host the products. These machine should be made available on the internet (eg so mobile application can submit their data to the server)
 
 Avoid at all cost putting dhis2 on the same machine. Dhis2 is already a complex beast, adding these products there will just complexify your scaling up strategies.
 
-Depending on the size of your organisation, you'll perhaps to split products accross multiple machines.
+Depending on the size of your organisation, you'll perhaps have to split products accross multiple machines.
 
 The general target infrastructure will look like this
 
 ![image](https://user-images.githubusercontent.com/371692/218134323-3daeadd9-646d-4357-aeb1-e69db112e14e.png)
+
+When we went for something like "systemd, docker images, docker-compose"
+
+This allows some
+
+- **homogeneity** to
+  - stop/start
+  - installation & versioning
+  - consult the logs
+- **isolation** (avoid package collisions)
+  - Hesabu : ruby 3.2 + openssl 1.1
+  - Enketo : nodejs
+  - Iaso : python 3.7 + gdal + openssl 1.0
+  - Dhis2 : java
+- **easier relocation**
+  - move to bigger machines
+  - split products accross multiple machines
+  - scale up ou disaster recovery (rebuild the infra)
 
 ## Setup a ansible on your laptop
 
@@ -63,6 +81,10 @@ localhosting-uganda.test.bluesquare.org. 275 IN A 35.181.6.159
 if you plan to use such instance for a more "production" ready : attach a static ip !
 or on the next restart the ip will change.
 
+make sure the instance is available for https
+
+![image](https://user-images.githubusercontent.com/371692/201864757-4d26fab7-619f-43f4-8941-34df123f191a.png)
+
 ## Configure inventory to connect to this machine
 
 ### Determine the case for https
@@ -112,9 +134,9 @@ all:
 
 ```
 
-replace each `replacemeX' with a different `uuidgen | tr -d - | tr -d '\n'` run
+replace each `replacemeX` with a different value you can use `uuidgen | tr -d - | tr -d '\n'`
 
-generate a password based on PORTAINER_PASSWORD
+generate a password based for PORTAINER_PASSWORD
 
 ```
 docker run --rm httpd:2.4-alpine htpasswd -nbB admin '<<replaceme1>>' | cut -d ":" -f 2 | sed -r 's/[$]+/\$\$/g'
@@ -154,10 +176,6 @@ ansible-playbook -i ./inventory/dev/ playbooks/iaso.yml
 ```
 
 ### Try to connect
-
-make sure the instance is available for https
-
-![image](https://user-images.githubusercontent.com/371692/201864757-4d26fab7-619f-43f4-8941-34df123f191a.png)
 
 Then test
 
