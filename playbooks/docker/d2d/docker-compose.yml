@@ -15,6 +15,13 @@ services:
     volumes:
       - ../d2d-compose/storage/redis:/data
 
+  ofelia:
+    image: mcuadros/ofelia:latest
+    restart: always
+    command: daemon --docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+
   d2d-frontend:
     image: blsq/d2d-front:${D2D_FRONT_VERSION}
     ports:
@@ -79,6 +86,17 @@ services:
       - RAILS_SERVE_STATIC_FILES=true
       - MAILGUN_API_KEY=${D2D_MAILGUN_API_KEY}
       - MAILGUN_DOMAIN=${D2D_MAILGUN_DOMAIN}
+      - RUBY_GC_HEAP_FREE_SLOTS_GOAL_RATIO=0.0
+      - RUBY_GC_HEAP_GROWTH_FACTOR=1
+      - RUBY_GC_HEAP_INIT_SLOTS=800000
+   labels:
+      - "ofelia.enabled=true"
+      # job1 to purge data values (task sinks)
+      - "ofelia.job-exec.purge_data_values.schedule=0 0 1 * * *"
+      - "ofelia.job-exec.purge_data_values.command=rake purge:dhis_data_values[30]"
+      # job2 to alert about missing orphans
+      - "ofelia.job-exec.orphans.schedule=@every 11m"
+      - "ofelia.job-exec.orphans.command=rake processor:alert_about_missing_orphans"
 
   d2d-backend-sidekiq:
     image: blsq/d2d-back:${D2D_BACK_VERSION}
@@ -114,6 +132,9 @@ services:
       - RAILS_SERVE_STATIC_FILES=true
       - MAILGUN_API_KEY=${D2D_MAILGUN_API_KEY}
       - MAILGUN_DOMAIN=${D2D_MAILGUN_DOMAIN}
+      - RUBY_GC_HEAP_FREE_SLOTS_GOAL_RATIO=0.0
+      - RUBY_GC_HEAP_GROWTH_FACTOR=1
+      - RUBY_GC_HEAP_INIT_SLOTS=800000
 
 networks:
   proxy:
