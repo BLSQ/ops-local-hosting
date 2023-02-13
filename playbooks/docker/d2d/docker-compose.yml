@@ -89,7 +89,7 @@ services:
       - RUBY_GC_HEAP_FREE_SLOTS_GOAL_RATIO=0.0
       - RUBY_GC_HEAP_GROWTH_FACTOR=1
       - RUBY_GC_HEAP_INIT_SLOTS=800000
-   labels:
+    labels:
       - "ofelia.enabled=true"
       # job1 to purge data values (task sinks)
       - "ofelia.job-exec.purge_data_values.schedule=0 0 1 * * *"
