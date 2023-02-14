@@ -47,7 +47,7 @@ services:
       - 'traefik.http.routers.d2d-frontend.middlewares=no-auth-secured@file'
       - 'traefik.http.routers.d2d-frontend.rule=Host(`d2d.${DOMAIN_NAME}`)'
 {% endif %}
-      - "traefik.http.services.dataviz.loadbalancer.passhostheader=true"
+      - "traefik.http.services.d2d-frontend.loadbalancer.passhostheader=true"
 
 
   d2d-backend:
