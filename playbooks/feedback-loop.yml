@@ -1,5 +1,6 @@
 ---
 - hosts: feedback-loop
+  tags: setup
   become: yes
   tasks:
     - name: Install pip3

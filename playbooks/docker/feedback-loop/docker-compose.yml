@@ -46,17 +46,17 @@ services:
       - 'traefik.enable=true'
       - 'traefik.docker.network=proxy'
 {% if TLS_ENABLED %}
-      - 'traefik.http.routers.netdata.entrypoints=websecure'
-      - 'traefik.http.routers.netdata.middlewares=basic-auth-secured@file'
-      - 'traefik.http.routers.netdata.rule=Host(`feedback.${DOMAIN_NAME}`)'
-      - 'traefik.http.routers.netdata.tls.certresolver=lets-encrypt'
-      - 'traefik.http.routers.netdata.tls.options=mintls12@file'
+      - 'traefik.http.routers.feedback-backend.entrypoints=websecure'
+      - 'traefik.http.routers.feedback-backend.middlewares=basic-auth-secured@file'
+      - 'traefik.http.routers.feedback-backend.rule=Host(`feedback-backend.${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.feedback-backend.tls.certresolver=lets-encrypt'
+      - 'traefik.http.routers.feedback-backend.tls.options=mintls12@file'
 {% else %}
-      - 'traefik.http.routers.netdata.entrypoints=web'
-      - 'traefik.http.routers.netdata.middlewares=basic-auth-secured@file'
-      - 'traefik.http.routers.netdata.rule=Host(`feedback.${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.feedback-backend.entrypoints=web'
+      - 'traefik.http.routers.feedback-backend.middlewares=basic-auth-secured@file'
+      - 'traefik.http.routers.feedback-backend.rule=Host(`feedback-backend.${DOMAIN_NAME}`)'
 {% endif %}
-      - "traefik.http.services.netdata.loadbalancer.passhostheader=true" 
+      - "traefik.http.services.feedback-backend.loadbalancer.passhostheader=true" 
     networks: 
       - proxy
       - default   
@@ -68,9 +68,23 @@ services:
       - db
       - redis
     environment:
-      REDIS_URL: redis://:${FEEDBACK_REDIS_PASSWORD}@redis:6379
       DATABASE_URL: postgres://${FEEDBACK_POSTGRES_USER}:${FEEDBACK_POSTGRES_PASSWORD}@db:5432/${FEEDBACK_POSTGRES_DB}
+      REDIS_URL: redis://:${FEEDBACK_REDIS_PASSWORD}@redis:6379
+      DB_USERNAME: ${FEEDBACK_POSTGRES_DB}
+      DB_PASSWORD: ${FEEDBACK_POSTGRES_PASSWORD}
+      BUCKET_KEY: ${FEEDBACK_BUCKET_KEY}
+      ACCESS_KEY_ID: ${MINIO_ROOT_USER}
+      SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
       ADMIN_PASSWORD: ${FEEDBACK_ADMIN_PASSWORD}
+      PUPPETER_TIME_OUT: 405000
+      SMTP_LOGIN: 
+      SMTP_PASSWORD:
+      SMTP_PORT:
+      SMTP_SERVER: smtp.mailgun.org
+      FEEDBACK_SENDER: 
+      TEST_EMAIL: 
+      APP_FILE: 
+      DEFAULT_THEME: 
 
   feedback-front:
     image: blsq/feedback-front:${FEEDBACK_FRONT_VERSION}
@@ -84,7 +98,24 @@ services:
       REACT_APP_TOKEN_NAME: ${FEEDBACK_REACT_APP_TOKEN_NAME}
       REACT_APP_API_URL: ${FEEDBACK_REACT_APP_API_URL}
       REACT_APP_URL: ${FEEDBACK_REACT_APP_URL}
-
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=proxy'
+{% if TLS_ENABLED %}
+      - 'traefik.http.routers.feedback-frontend.entrypoints=websecure'
+      - 'traefik.http.routers.feedback-frontend.middlewares=no-auth-secured@file'
+      - 'traefik.http.routers.feedback-frontend.rule=Host(`feedback.${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.feedback-frontend.tls.certresolver=lets-encrypt'
+      - 'traefik.http.routers.feedback-frontend.tls.options=mintls12@file'
+{% else %}
+      - 'traefik.http.routers.feedback-frontend.entrypoints=web'
+      - 'traefik.http.routers.feedback-frontend.middlewares=no-auth-secured@file'
+      - 'traefik.http.routers.feedback-frontend.rule=Host(`feedback.${DOMAIN_NAME}`)'
+{% endif %}
+      - "traefik.http.services.feedback-frontend.loadbalancer.passhostheader=true"
+    networks: 
+      - proxy
+      - default   
 networks:
   proxy:
     external: true     
