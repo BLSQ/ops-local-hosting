@@ -1,0 +1,141 @@
+version: "3.3"
+services:
+  db:
+    image: postgres:${D2D_POSTGRES_VERSION}
+    volumes:
+      - ../d2d-compose/storage/db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${D2D_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${D2D_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${D2D_POSTGRES_DB}
+
+  redis:
+    image: redis:${D2D_REDIS_VERSION}
+    command: redis-server --requirepass ${D2D_REDIS_PASSWORD}
+    volumes:
+      - ../d2d-compose/storage/redis:/data
+
+  ofelia:
+    image: mcuadros/ofelia:latest
+    restart: always
+    command: daemon --docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+
+  d2d-frontend:
+    image: blsq/d2d-front:${D2D_FRONT_VERSION}
+    ports:
+      - "9080:80"
+    depends_on:
+      - d2d-backend
+    networks:
+      - proxy
+      - default      
+    environment:
+      - D2D_BACKEND_URL=d2d-backend:3000
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=proxy'
+{% if TLS_ENABLED %}
+      - 'traefik.http.routers.d2d-frontend.entrypoints=websecure'
+      - 'traefik.http.routers.d2d-frontend.middlewares=no-auth-secured@file'
+      - 'traefik.http.routers.d2d-frontend.rule=Host(`d2d.${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.d2d-frontend.tls.certresolver=lets-encrypt'
+      - 'traefik.http.routers.d2d-frontend.tls.options=mintls12@file'
+{% else %}
+      - 'traefik.http.routers.d2d-frontend.entrypoints=web'
+      - 'traefik.http.routers.d2d-frontend.middlewares=no-auth-secured@file'
+      - 'traefik.http.routers.d2d-frontend.rule=Host(`d2d.${DOMAIN_NAME}`)'
+{% endif %}
+      - "traefik.http.services.dataviz.loadbalancer.passhostheader=true"
+
+
+  d2d-backend:
+    image: blsq/d2d-back:${D2D_BACK_VERSION}
+    stdin_open: true
+    tty: true
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rake db:migrate && bundle exec rails s -p 3000 -b '0.0.0.0'"
+    ports:
+      - "8000:3000"
+    depends_on:
+      - db
+      - redis
+    environment:
+      - REDIS_URL=redis://:${D2D_REDIS_PASSWORD}@redis:6379
+      - DATABASE_URL=postgres://${D2D_POSTGRES_USER}:${D2D_POSTGRES_PASSWORD}@db:5432/${D2D_POSTGRES_DB}
+      - ADMIN_PASSWORD=${D2D_ADMIN_PASSWORD}
+      - RAILS_ENV=production
+      - DISABLE_FORCE_SSL=TRUE
+      - RAILS_LOG_TO_STDOUT=enabled
+      - RAILS_SERVE_STATIC_FILES=enabled
+      - RACK_ENV=production
+      - LANG=en_US.UTF-8
+      - ORG_UNIT_PAGE_SIZE=50
+      - SIDEKIQ_DB_POOL_SIZE=14
+      - MALLOC_ARENA_MAX=2
+      - SECRET_KEY_BASE=${D2D_SECRET_KEY_BASE}
+      - ENCRYPTION_SERVICE_SALT=${D2D_ENCRYPTION_SERVICE_SALT}
+      - JWT_EXPIRATION_HOURS=${D2D_JWT_EXPIRATION_HOURS-4}
+      - FRONT_BASE_URL=${D2D_FRONT_BASE_URL}
+      - JWT_SECRET=${D2D_JWT_SECRET}
+      - RAILS_ACTIVE_STORAGE=minio
+      - AWS_ACCESS_KEY_ID=${MINIO_ROOT_USER}
+      - AWS_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD}
+      - SIDEKIQ_USERNAME=${D2D_SIDEKIQ_USERNAME}
+      - SIDEKIQ_PASSWORD=${D2D_SIDEKIQ_PASSWORD}
+      - RAILS_SERVE_STATIC_FILES=true
+      - MAILGUN_API_KEY=${D2D_MAILGUN_API_KEY}
+      - MAILGUN_DOMAIN=${D2D_MAILGUN_DOMAIN}
+      - RUBY_GC_HEAP_FREE_SLOTS_GOAL_RATIO=0.0
+      - RUBY_GC_HEAP_GROWTH_FACTOR=1
+      - RUBY_GC_HEAP_INIT_SLOTS=800000
+    labels:
+      - "ofelia.enabled=true"
+      # job1 to purge data values (task sinks)
+      - "ofelia.job-exec.purge_data_values.schedule=0 0 1 * * *"
+      - "ofelia.job-exec.purge_data_values.command=rake purge:dhis_data_values[30]"
+      # job2 to alert about missing orphans
+      - "ofelia.job-exec.orphans.schedule=@every 11m"
+      - "ofelia.job-exec.orphans.command=rake processor:alert_about_missing_orphans"
+
+  d2d-backend-sidekiq:
+    image: blsq/d2d-back:${D2D_BACK_VERSION}
+    stdin_open: true
+    tty: true
+    command: bash -c "bundle exec sidekiq -q default -q data_worker -q meta_worker -q mailers -C config/sidekiq.yml"
+    depends_on:
+      - db
+      - redis
+    environment:
+      - REDIS_URL=redis://:${D2D_REDIS_PASSWORD}@redis:6379
+      - DATABASE_URL=postgres://${D2D_POSTGRES_USER}:${D2D_POSTGRES_PASSWORD}@db:5432/${D2D_POSTGRES_DB}
+      - ADMIN_PASSWORD=${D2D_ADMIN_PASSWORD}
+      - RAILS_ENV=production
+      - DISABLE_FORCE_SSL=TRUE
+      - RAILS_LOG_TO_STDOUT=enabled
+      - RAILS_SERVE_STATIC_FILES=enabled
+      - RACK_ENV=production
+      - LANG=en_US.UTF-8
+      - ORG_UNIT_PAGE_SIZE=50
+      - SIDEKIQ_DB_POOL_SIZE=14
+      - MALLOC_ARENA_MAX=2
+      - SECRET_KEY_BASE=${D2D_SECRET_KEY_BASE}
+      - ENCRYPTION_SERVICE_SALT=${D2D_ENCRYPTION_SERVICE_SALT}
+      - JWT_EXPIRATION_HOURS=${D2D_JWT_EXPIRATION_HOURS-4}
+      - FRONT_BASE_URL=${D2D_FRONT_BASE_URL}
+      - JWT_SECRET=${D2D_JWT_SECRET}
+      - RAILS_ACTIVE_STORAGE=minio
+      - AWS_ACCESS_KEY_ID=${MINIO_ROOT_USER}
+      - AWS_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD}
+      - SIDEKIQ_USERNAME=${D2D_SIDEKIQ_USERNAME}
+      - SIDEKIQ_PASSWORD=${D2D_SIDEKIQ_PASSWORD}
+      - RAILS_SERVE_STATIC_FILES=true
+      - MAILGUN_API_KEY=${D2D_MAILGUN_API_KEY}
+      - MAILGUN_DOMAIN=${D2D_MAILGUN_DOMAIN}
+      - RUBY_GC_HEAP_FREE_SLOTS_GOAL_RATIO=0.0
+      - RUBY_GC_HEAP_GROWTH_FACTOR=1
+      - RUBY_GC_HEAP_INIT_SLOTS=800000
+
+networks:
+  proxy:
+    external: true

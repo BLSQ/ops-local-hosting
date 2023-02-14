@@ -36,6 +36,7 @@
         - netdata
         - enketo
         - iaso
+        - d2d
 
     - name: Add an A record
       community.aws.route53:

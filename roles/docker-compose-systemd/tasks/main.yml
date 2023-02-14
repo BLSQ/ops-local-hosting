@@ -1,3 +1,4 @@
 ---
 - import_tasks: docker_install.yml
+  tags: setup
 - import_tasks: docker_compose_systemd.yml
