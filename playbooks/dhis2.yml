@@ -1,7 +1,6 @@
 ---
 - hosts: dhis2
   become: yes
-
   tasks:
     - name: install pip3
       apt: name=python3-pip state=present update-cache=yes 
@@ -36,25 +35,32 @@
 
 - hosts: dhis2
   become: yes
+  vars_files:
+    - ../roles/postgres/vars/main.yml
   roles:
-      - ../roles/docker-compose-systemd
+    - role: ../roles/postgres
+      
+- hosts: dhis2
+  become: yes
+
+  roles:
+    - ../roles/docker-compose-systemd
   vars:
-      docker_services:
-      - name: dhis2
-        enabled: yes
-        need_restart: yes
-        root_dir: /srv/docker/dhis2
-        compose_template: docker/dhis2/docker-compose.yml
-        env_template: docker/.env
-        unit_template: docker-compose/compose-unit.j2
-        
-      - name: traefik
-        enabled: yes
-        need_restart: yes
-        root_dir: /srv/docker/traefik
-        compose_template: docker/traefik/docker-compose.yml
-        env_template: docker/.env
-        unit_template: docker-compose/compose-unit.j2
-
-
-    
+    - all_docker_services:
+        - name: dhis2
+          enabled: yes
+          need_restart: yes
+          root_dir: /srv/docker/dhis2
+          compose_template: docker/dhis2/docker-compose.yml
+          env_template: docker/dhis2.env
+          unit_template: docker-compose/compose-unit.j2
+          used_by: "dhis2"
+        - name: traefik
+          enabled: yes
+          need_restart: yes
+          root_dir: /srv/docker/traefik
+          compose_template: "docker/traefik/docker-compose-tls-{{TLS_ENABLED}}.yml"
+          env_template: docker/traefik.env
+          unit_template: docker-compose/compose-unit.j2
+          used_by: "dhis2"
+    - docker_services: "{{ all_docker_services | selectattr('used_by', 'match', blsq_products_regexp)}}"

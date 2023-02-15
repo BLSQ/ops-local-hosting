@@ -74,6 +74,14 @@
         dest: "/srv/docker/dataviz/config/front/env.json"
 
 - hosts: iaso
+  tags: setup-dhis2-postgresql
+  become: yes
+  vars_files:
+    - ../roles/postgres/vars/main.yml
+  roles:
+    - role: ../roles/postgres
+
+- hosts: iaso
   become: yes
   roles:
     - ../roles/docker-compose-systemd
@@ -127,6 +135,14 @@
           env_template: docker/d2d.env
           unit_template: docker-compose/compose-unit.j2
           used_by: "d2d"
+        - name: dhis2
+          enabled: yes
+          need_restart: yes
+          root_dir: /srv/docker/dhis2
+          compose_template: docker/dhis2/docker-compose.yml
+          env_template: docker/dhis2.env
+          unit_template: docker-compose/compose-unit.j2
+          used_by: "dhis2"
         - name: traefik
           enabled: yes
           need_restart: yes
@@ -134,7 +150,7 @@
           compose_template: "docker/traefik/docker-compose-tls-{{TLS_ENABLED}}.yml"
           env_template: docker/traefik.env
           unit_template: docker-compose/compose-unit.j2
-          used_by: "iaso dataviz hesabu d2d"
+          used_by: "iaso dataviz hesabu d2d dhis2"
         - name: netdata
           enabled: yes
           need_restart: yes
