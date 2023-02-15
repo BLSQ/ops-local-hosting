@@ -1,7 +1,7 @@
 version: '3'
 services:
   dhis2:
-    image: blsq/dhis2:2.35.14
+    image: blsq/dhis2:${DHIS2_VERSION}
     restart: always
     env_file: .env
     volumes:
@@ -18,13 +18,13 @@ services:
 {% if TLS_ENABLED %}  
       - 'traefik.http.routers.dhis2.entrypoints=websecure'
       - 'traefik.http.routers.dhis2.middlewares=no-auth-secured@file'
-      - 'traefik.http.routers.dhis2.rule=Host(`${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.dhis2.rule=Host(`${DHIS2_DOMAIN_NAME}`)'
       - 'traefik.http.routers.dhis2.tls.certresolver=lets-encrypt'
       - 'traefik.http.routers.dhis2.tls.options=mintls12@file'
 {% else %}
       - 'traefik.http.routers.dhis2.entrypoints=web'
       - 'traefik.http.routers.dhis2.middlewares=no-auth-secured@file'
-      - 'traefik.http.routers.dhis2.rule=Host(`${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.dhis2.rule=Host(`${DHIS2_DOMAIN_NAME}`)'
 {% endif %}
       - "traefik.http.services.dhis2.loadbalancer.passhostheader=true"
 networks:
