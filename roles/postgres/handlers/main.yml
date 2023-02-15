@@ -1,0 +1,6 @@
+---
+- name: postgresql__restart_service
+  service: 
+      name: postgresql 
+      state: restarted
+

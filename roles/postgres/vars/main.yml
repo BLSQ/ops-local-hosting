@@ -1,0 +1,12 @@
+---
+# vars file
+postgres_max_connections: 200
+postgres_shared_buffers: "{{ (((ansible_memtotal_mb/1024.0)|round|int)*0.25)|int*1024 }}MB"
+postgres_work_mem: "{{ ((((ansible_memtotal_mb/1024.0)|round|int)*0.25)/postgres_max_connections*1024)|round|int }}MB"
+postgres_maintenance_work_mem: "{{ ((ansible_memtotal_mb/1024.0)|round|int)*64 }}MB"
+postgres_effective_cache_size: "{{ (((ansible_memtotal_mb/1024.0)|round|int)*0.75)|int*1024 }}MB"
+postgres_checkpoint_completion_target: 0.8
+postgres_synchronous_commit: "off"
+postgres_wal_writer_delay: "10000ms"
+postgres_random_page_cost: 1.1
+postgres_max_locks_per_transaction: 96
