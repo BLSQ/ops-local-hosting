@@ -80,6 +80,7 @@
     - ../roles/postgres/vars/main.yml
   roles:
     - role: ../roles/postgres
+      when: blsq_products_regexp.find('dhis2') != -1
 
 - hosts: iaso
   become: yes

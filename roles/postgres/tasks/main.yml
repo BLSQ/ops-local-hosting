@@ -1,10 +1,10 @@
 # Configure PostgreSQL
-- import_tasks: install.yml
+- include_tasks: install.yml
 - name: "Ensure PostgreSQL is started and enabled"
   service: 
     name: postgresql 
     state: started 
     enabled: yes
-- import_tasks: database.yml
-- import_tasks: configure.yml
+- include_tasks: database.yml
+- include_tasks: configure.yml
 
