@@ -1,3 +1,0 @@
-#!/bin/bash 
-
-docker run -it -v '/var/run/docker.sock:/var/run/docker.sock' --cap-add=SYS_PTRACE --network hesabu_default --rm blsq/toolbox "$@"   

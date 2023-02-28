@@ -217,3 +217,30 @@ see these documents
 - monitor daily these backups (success/failure, late,... )
 - move these files for off site retention
 - test the restore on seperate machine from time to time
+
+
+### Install the ops-local-hosting-toolbox
+
+see : https://github.com/BLSQ/ops-local-hosting-toolbox
+
+### Trigger dumps
+
+You can manually trigger the dumps
+
+```
+sudo ./toolbox dataviz dump dataviz-worker
+sudo ./toolbox hesabu dump hesabu-worker
+sudo ./toolbox d2d dump d2d-backend-sidekiq
+sudo ./toolbox iaso dump iaso_1
+```
+
+but ideally put them in a crontab
+then "move" them to another location
+
+this can be done by
+- encrypting them 
+- moving them to an s3 bucket 
+
+don't forget to
+- test the restore of these backups
+- cleanup old dumps (/home/backups and in s3)
