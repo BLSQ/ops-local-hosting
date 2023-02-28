@@ -1,0 +1,38 @@
+---
+- name: "Create dhis2 database"
+  become_user: postgres
+  postgresql_db:
+    state: present
+    name: "{{ DHIS2_DATABASE_NAME }}"
+    encoding: UTF-8
+    lc_collate: en_US.UTF-8
+    lc_ctype: en_US.UTF-8
+    conn_limit: -1
+    template: template0
+
+- name: "Create dhis2 user"
+  postgresql_user:
+    state: present
+    name: "{{ DHIS2_DATABASE_USER }}"
+    password: "{{ DHIS2_DATABASE_PASSWORD }}"
+    role_attr_flags: CREATEDB,CREATEROLE,REPLICATION,BYPASSRLS,SUPERUSER
+  become_user: postgres
+
+- name: "GRANT all privileges to dhis2 user"
+  postgresql_privs:
+    type: database
+    database: "{{ DHIS2_DATABASE_NAME }}"
+    roles: "{{ DHIS2_DATABASE_USER }}"
+    privs: all
+  become_user: postgres
+
+- name: "Create postgis extention"
+  postgresql_ext:
+    name: postgis
+    db: "{{ DHIS2_DATABASE_NAME }}"
+  become_user: postgres
+  
+- name: "ALTER dhis_db_name"
+  command: psql -d {{ DHIS2_DATABASE_NAME }} -c "ALTER DATABASE {{ DHIS2_DATABASE_NAME }} SET SEARCH_PATH=PUBLIC,POSTGIS;"
+  become_user: postgres
+
