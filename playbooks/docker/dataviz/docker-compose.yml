@@ -60,13 +60,13 @@ services:
 {% if TLS_ENABLED %}
       - 'traefik.http.routers.dataviz.entrypoints=websecure'
       - 'traefik.http.routers.dataviz.middlewares=no-auth-secured@file'
-      - 'traefik.http.routers.dataviz.rule=Host(`dataviz-backend.${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.dataviz.rule=Host(`${DATAVIZ_BACKEND_DOMAIN_NAME}`)'
       - 'traefik.http.routers.dataviz.tls.certresolver=lets-encrypt'
       - 'traefik.http.routers.dataviz.tls.options=mintls12@file'
 {% else %}
       - 'traefik.http.routers.dataviz.entrypoints=web'
       - 'traefik.http.routers.dataviz.middlewares=no-auth-secured@file'
-      - 'traefik.http.routers.dataviz.rule=Host(`dataviz-backend.${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.dataviz.rule=Host(`${DATAVIZ_BACKEND_DOMAIN_NAME}`)'
 {% endif %}
       - "traefik.http.services.dataviz.loadbalancer.passhostheader=true"
 
@@ -103,11 +103,11 @@ services:
 {% if TLS_ENABLED %}
       - "traefik.http.routers.dataviz-front.entrypoints=websecure"
       - "traefik.http.routers.dataviz-front.middlewares=no-auth-secured@file"
-      - "traefik.http.routers.dataviz-front.rule=Host(`dataviz.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.dataviz-front.rule=Host(`${DATAVIZ_FRONT_DOMAIN_NAME}`)"
       - "traefik.http.routers.dataviz-front.tls.certresolver=lets-encrypt"
       - "traefik.http.routers.dataviz-front.tls.options=mintls12@file"
 {% else %}
-      - "traefik.http.routers.dataviz-front.rule=Host(`dataviz.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.dataviz-front.rule=Host(`${DATAVIZ_FRONT_DOMAIN_NAME}`)"
       - "traefik.http.routers.dataviz-front.entrypoints=web"
 {% endif %}
       - "traefik.http.services.dataviz-front.loadbalancer.passhostheader=true"
