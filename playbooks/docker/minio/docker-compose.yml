@@ -64,15 +64,19 @@ services:
       /usr/bin/mc mb hesabu-minio/iaso-prod;
       /usr/bin/mc mb hesabu-minio/dataviz-manager-build;
       /usr/bin/mc mb hesabu-minio/dataviz;
+      /usr/bin/mc mb hesabu-minio/feedback-loop;
       echo make policy;
       /usr/bin/mc policy set download hesabu-minio/simulation;
       /usr/bin/mc policy set download hesabu-minio/iaso-prod;
       /usr/bin/mc policy set download hesabu-minio/dataviz-manager-build;
       /usr/bin/mc policy set download hesabu-minio/dataviz;
+      /usr/bin/mc policy set download hesabu-minio/feedback-loop;
       /usr/bin/mc anonymous set download localhostminio/iaso-prod/iasostatics/
       /usr/bin/mc anonymous set public localhostminio/iaso-prod/iasostatics/
       /usr/bin/mc anonymous set download localhostminio/dataviz/
       /usr/bin/mc anonymous set public localhostminio/dataviz/
+      /usr/bin/mc anonymous set download localhostminio/feedback-loop/
+      /usr/bin/mc anonymous set public localhostminio/feedback-loop/
       exit 0;
       "
 
