@@ -145,6 +145,14 @@ docker run --rm httpd:2.4-alpine htpasswd -nbB admin '<<replaceme1>>' | cut -d "
 This calls htpasswd, keep only the password part and replace $ by $$ to get it right in docker-compose yml)
 Note that if the portainer has already started, you need to stop it, delete the volume
 
+generate a password for SECRET_KEY_BASE
+
+```
+irb
+require 'securerandom'
+puts SecureRandom.hex(64)
+```
+
 - systemctl stop traefik
 - docker volume ls
 - docker volume rm traefik_portainer-data
