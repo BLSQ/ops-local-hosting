@@ -1,0 +1,38 @@
+---
+- name: "Set postgres config"
+  postgresql_set:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+  with_items:
+    - {name: 'listen_addresses', value: '*'}
+    - {name: 'max_connections', value: '{{postgres_max_connections}}'}
+    - {name: 'shared_buffers', value: '{{postgres_shared_buffers}}'}
+    - {name: 'work_mem', value: '{{postgres_work_mem}}'}
+    - {name: 'maintenance_work_mem', value: '{{postgres_maintenance_work_mem}}'}
+    - {name: 'effective_cache_size', value: '{{postgres_effective_cache_size}}'}
+    - {name: 'checkpoint_completion_target', value: '{{postgres_checkpoint_completion_target}}'}
+    - {name: 'synchronous_commit', value: '{{postgres_synchronous_commit}}'}
+    - {name: 'wal_writer_delay', value: '{{postgres_wal_writer_delay}}'}
+    - {name: 'random_page_cost', value: '{{postgres_random_page_cost}}'}
+    - {name: 'max_locks_per_transaction', value: '{{postgres_max_locks_per_transaction}}'}
+  become_user: postgres
+  notify: postgresql__restart_service
+
+- name: debug info
+  debug:
+    msg: 
+    - "Suggested shared_buffers: {{postgres_shared_buffers}}"
+    - "Suggested work_mem: {{postgres_work_mem}}"
+    - "Suggested maintenance_work_mem: {{postgres_maintenance_work_mem}}"
+    - "Suggested effective_cache_size: {{postgres_effective_cache_size}}"
+
+- name: "Allow connection for all user"
+  postgresql_pg_hba:
+    dest: "/etc/postgresql/{{DHIS2_POSTGRES_VERSION}}/main/pg_hba.conf"
+    contype: host
+    databases: all
+    users: all
+    source: 0.0.0.0/0
+    method: md5
+  become_user: postgres
+  notify: postgresql__restart_service
