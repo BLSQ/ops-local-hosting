@@ -226,7 +226,6 @@ see these documents
 - move these files for off site retention
 - test the restore on seperate machine from time to time
 
-
 ### Install the ops-local-hosting-toolbox
 
 see : https://github.com/BLSQ/ops-local-hosting-toolbox
@@ -252,3 +251,20 @@ this can be done by
 don't forget to
 - test the restore of these backups
 - cleanup old dumps (/home/backups and in s3)
+
+## Your server is now the production server
+
+If the server looks ok then a few last steps are necessary for most products.
+
+You will probably receveive a last dump to restore with the latest production data from our SAAS.
+
+A last step is to have your production dhis2 talk to the new/correct servers.
+
+- [hesabu](./docs/prod_migr-hesabu.md)
+- [dataviz](./docs/prod_migr-dataviz.md)
+
+## What's left on you
+
+- watch diskspace (most database will grow)
+- check server availability (like pingdom or other similar product)
+- check backups are produced, moved to a safe off site location, cleaned from the machine
