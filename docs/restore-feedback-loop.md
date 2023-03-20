@@ -4,7 +4,7 @@
 # download dump inside feedback-loop container and restore it
 sudo docker exec --detach-keys='ctrl-@'  -it  feedback-loop_feedback-backend_1 bash
 
-# Download d2d dump
+# Download feed-back-loop dump
 
 wget "https://blsq-io.s3.eu-west-1.amazonaws.com/sanita-localhosting/feed-back-loop-production.dump.gz?response-content-__presigned_..._url" -O feed-back-loop-production.dump.gz
 
