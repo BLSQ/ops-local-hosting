@@ -42,7 +42,15 @@ you can configure it to the server via mc alias
 ./mc alias set localhostminio https://minio.localhosting-mbtest.test.bluesquare.org <ACCESS_KEY_ID> <SECRET_KEY_ID>
 ```
 
-then create the bucket with name feedback-loop-production through:
+then create the bucket with name feedback-loop-production:
+
+you can check if the bucket is already exists by listing all buckets on the server:
+
+```
+./mc ls localhostminio
+```
+
+If it exists, It will appear in the list. Otherwise, you will have to create it with the command:
 
 ```
 ./mc mb localhostminio/feedback-loop-production
