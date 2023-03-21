@@ -1,8 +1,8 @@
 # Restore the pg dump
 
 ```
-# download dump inside feedback-loop container and restore it
-sudo docker exec --detach-keys='ctrl-@'  -it  feedback-loop_feedback-backend_1 bash
+# download dump inside feedback-loop-db container and restore it
+sudo docker exec --detach-keys='ctrl-@' -it feedback-loop_db_1 bash
 
 # Download feed-back-loop dump
 
@@ -12,10 +12,14 @@ wget "https://blsq-io.s3.eu-west-1.amazonaws.com/sanita-localhosting/feed-back-l
 gzip -d feed-back-loop-production.dump.gz
 
 
+# Check the DATABASE_URL from feedback-loop_backend container
+sudo docker exec --detach-keys='ctrl-@'  -it feedback-loop_feedback-backend_1 bash
+env
 
 # then restore
-psql -U postgres -c 'create database feed_back_loop_production;'
-psql -U postgres -h localhost -d feed_back_loop_production < feed-back-loop-production.dump
+sudo docker exec --detach-keys='ctrl-@'  -it feedback-loop_db_1 bash
+export DATABASE_URL=
+pg_restore --format=c --verbose --no-acl --clean --jobs=6 --no-owner -d feed_back_loop_production  feed-back-loop-production.dump
 
 
 # delete the old files
@@ -26,40 +30,26 @@ rm feed-back-loop-production.dump
 
 ## Restore pdf reports
 
-```
-wget "https://blsq-io.s3.eu-west-1.amazonaws.com/sanita-localhosting/mailings.tar.gz?response-content-disposition=inline&..." -O  mailings.tar.gz
-
-mkdir mailings
-cd mailings
-tar -xvzf ../mailings.tar.gz
-```
-
 assuming you installed mc
 
 you can configure it to the server via mc alias
 
 ```
-./mc alias set localhostminio https://minio.localhosting-mbtest.test.bluesquare.org <ACCESS_KEY_ID> <SECRET_KEY_ID>
+mc alias set localhostminio $ENDPOINT $ACCESS_KEY_ID $SECRET_ACCESS_KEY
+mc admin info localhostminio
+mc ls localhostminio
 ```
+get a presigned url from our blsq s3 bucket
 
-then create the bucket with name feedback-loop-production:
-
-you can check if the bucket is already exists by listing all buckets on the server:
-
-```
-./mc ls localhostminio
-```
-
-If it exists, It will appear in the list. Otherwise, you will have to create it with the command:
+download the mailings folder on the host inside feedback-backend container and restore it
 
 ```
-./mc mb localhostminio/feedback-loop-production
-```
-
-and restore the mailings folder
-
-```
-./mc cp --continue --recursive ./mailings/ localhostminio/feedback-loop-production/mailings
+sudo docker exec --detach-keys='ctrl-@'  -it feedback-loop_feedback-backend_1  bash
+wget "https://blsq-io.s3.eu-west-1.amazonaws.com/sanita-localhosting/mailings.tar.gz?response-content-disposition=inline&..." -O  mailings.tar.gz
+mkdir mailings
+cd mailings
+tar -xvzf ../mailings.tar.gz
+mc cp --continue --recursive ./mailings/ localhostminio/feedback-loop/mailings
 rm mailings.tar.gz
 ```
 
@@ -67,15 +57,9 @@ rm mailings.tar.gz
 
 ```
 wget "https://blsq-io.s3.eu-west-1.amazonaws.com/sanita-localhosting/logos.tar.gz?response-content-disposition=inline&..." -O  logos.tar.gz
-
 mkdir logos
 cd logos
 tar -xvzf ../logos.tar.gz
-```
-
-and restore logos folder
-
-```
-./mc cp --continue --recursive ./logos/ localhostminio/feedback-loop-production/logos
+mc cp --continue --recursive ./logos/ localhostminio/feedback-loop/logos
 rm logos.tar.gz
 ```
