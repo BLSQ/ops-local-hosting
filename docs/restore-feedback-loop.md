@@ -19,7 +19,7 @@ env
 # then restore
 sudo docker exec --detach-keys='ctrl-@'  -it feedback-loop_db_1 bash
 export DATABASE_URL=
-pg_restore --format=c --verbose --no-acl --clean --jobs=6 --no-owner -d feed_back_loop_production  feed-back-loop-production.dump
+pg_restore --format=c --verbose --no-acl --clean --jobs=6 --no-owner -d $DATABASE_URL feed-back-loop-production.dump
 
 
 # delete the old files
