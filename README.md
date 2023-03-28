@@ -180,7 +180,7 @@ save then test your access
 go back to the root directory of ops-local-hosting and launch
 
 ```
-ansible-playbook -i ./inventory/dev/ playbooks/iaso.yml
+ansible-playbook -i ./inventory/dev/ playbooks/blsq.yml
 ```
 
 ### Try to connect
