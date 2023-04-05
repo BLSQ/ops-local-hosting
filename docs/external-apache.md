@@ -3,6 +3,7 @@
 
 - the dns records pointing to the apache server
 - a log file directory is available (don't forget to log rotate it)
+- the 80 and 443 port are accessible (check the firewall rules)
 - the proxy and proxy_http modules are enabled
 
 if not done you can enable the mods via 
