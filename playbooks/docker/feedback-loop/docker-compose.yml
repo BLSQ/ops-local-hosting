@@ -35,6 +35,7 @@ services:
       SMTP_PASSWORD: ${FEEDBACK_SMTP_PASSWORD}
       SMTP_PORT: ${FEEDBACK_SMTP_PORT}
       SMTP_SERVER: ${FEEDBACK_SMTP_SERVER}
+      SMTP_SECURE: ${FEEDBACK_SMTP_SECURE}
       FEEDBACK_SENDER: ${FEEDBACK_SENDER}
       TEST_EMAIL: ${FEEDBACK_TEST_EMAIL}
       APP_FILE: 
@@ -85,6 +86,7 @@ services:
       SMTP_PASSWORD: ${FEEDBACK_SMTP_PASSWORD}
       SMTP_PORT: ${FEEDBACK_SMTP_PORT}
       SMTP_SERVER: ${FEEDBACK_SMTP_SERVER}
+      SMTP_SECURE: ${FEEDBACK_SMTP_SECURE}
       FEEDBACK_SENDER: ${FEEDBACK_SENDER}
       TEST_EMAIL: ${FEEDBACK_TEST_EMAIL}
       APP_FILE: 
@@ -102,24 +104,7 @@ services:
       REACT_APP_TOKEN_NAME: ${FEEDBACK_REACT_APP_TOKEN_NAME}
       REACT_APP_API_URL: ${FEEDBACK_REACT_APP_API_URL}
       REACT_APP_URL: ${FEEDBACK_REACT_APP_URL}
-    labels:
-      - 'traefik.enable=true'
-      - 'traefik.docker.network=proxy'
-{% if TLS_ENABLED %}
-      - 'traefik.http.routers.feedback-frontend.entrypoints=websecure'
-      - 'traefik.http.routers.feedback-frontend.middlewares=no-auth-secured@file'
-      - 'traefik.http.routers.feedback-frontend.rule=Host(`feedback.${DOMAIN_NAME}`)'
-      - 'traefik.http.routers.feedback-frontend.tls.certresolver=lets-encrypt'
-      - 'traefik.http.routers.feedback-frontend.tls.options=mintls12@file'
-{% else %}
-      - 'traefik.http.routers.feedback-frontend.entrypoints=web'
-      - 'traefik.http.routers.feedback-frontend.middlewares=no-auth-secured@file'
-      - 'traefik.http.routers.feedback-frontend.rule=Host(`feedback.${DOMAIN_NAME}`)'
-{% endif %}
-      - "traefik.http.services.feedback-frontend.loadbalancer.passhostheader=true"
-    networks: 
-      - proxy
-      - default   
+        
 networks:
   proxy:
     external: true     
