@@ -1,0 +1,110 @@
+version: "3.3"
+services:
+  db:
+    image: postgres:${FEEDBACK_POSTGRES_VERSION}
+    volumes:
+      - ./storage/db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${FEEDBACK_POSTGRES_DB}
+      POSTGRES_USER: ${FEEDBACK_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${FEEDBACK_POSTGRES_PASSWORD}
+
+  redis:
+    image: redis:${FEEDBACK_REDIS_VERSION}
+    command: redis-server --requirepass ${FEEDBACK_REDIS_PASSWORD}
+    volumes:
+      - ./storage/redis:/data
+
+  feedback-backend:
+    image: blsq/feedback-backend:${FEEDBACK_BACKEND_VERSION}
+    command: bash -c "npx prisma db push && npm start"
+    environment:
+      PORT: 8000
+      DATABASE_URL: postgres://${FEEDBACK_POSTGRES_USER}:${FEEDBACK_POSTGRES_PASSWORD}@db:5432/${FEEDBACK_POSTGRES_DB}
+      REDIS_URL: redis://:${FEEDBACK_REDIS_PASSWORD}@redis:6379
+      DB_USERNAME: ${FEEDBACK_POSTGRES_DB}
+      DB_PASSWORD: ${FEEDBACK_POSTGRES_PASSWORD}
+      BUCKET_KEY: ${FEEDBACK_BUCKET_KEY}
+      ACCESS_KEY_ID: ${MINIO_ROOT_USER}
+      SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
+      ENDPOINT: ${MINIO_URL}
+      REGION: ${FEEDBACK_AWS_REGION}
+      ADMIN_PASSWORD: ${FEEDBACK_ADMIN_PASSWORD}
+      PUPPETER_TIME_OUT: 405000
+      SMTP_LOGIN: ${FEEDBACK_SMTP_LOGIN}
+      SMTP_PASSWORD: ${FEEDBACK_SMTP_PASSWORD}
+      SMTP_PORT: ${FEEDBACK_SMTP_PORT}
+      SMTP_SERVER: ${FEEDBACK_SMTP_SERVER}
+      SMTP_SECURE: ${FEEDBACK_SMTP_SECURE}
+      FEEDBACK_SENDER: ${FEEDBACK_SENDER}
+      TEST_EMAIL: ${FEEDBACK_TEST_EMAIL}
+      APP_FILE: 
+      DEFAULT_THEME: 
+    ports:
+      - "6000:8000"
+    depends_on:
+      - db
+      - redis
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=proxy'
+{% if TLS_ENABLED %}
+      - 'traefik.http.routers.feedback-backend.entrypoints=websecure'
+      - 'traefik.http.routers.feedback-backend.middlewares=no-auth-secured@file'
+      - 'traefik.http.routers.feedback-backend.rule=Host(`feedback-backend.${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.feedback-backend.tls.certresolver=lets-encrypt'
+      - 'traefik.http.routers.feedback-backend.tls.options=mintls12@file'
+{% else %}
+      - 'traefik.http.routers.feedback-backend.entrypoints=web'
+      - 'traefik.http.routers.feedback-backend.middlewares=no-auth-secured@file'
+      - 'traefik.http.routers.feedback-backend.rule=Host(`feedback-backend.${DOMAIN_NAME}`)'
+{% endif %}
+      - "traefik.http.services.feedback-backend.loadbalancer.passhostheader=true" 
+    networks: 
+      - proxy
+      - default   
+
+  feedback-worker:
+    image: blsq/feedback-backend:${FEEDBACK_BACKEND_VERSION}
+    command: bash -c "node server/workers/worker.js"
+    depends_on:
+      - db
+      - redis
+    environment:
+      DATABASE_URL: postgres://${FEEDBACK_POSTGRES_USER}:${FEEDBACK_POSTGRES_PASSWORD}@db:5432/${FEEDBACK_POSTGRES_DB}
+      REDIS_URL: redis://:${FEEDBACK_REDIS_PASSWORD}@redis:6379
+      DB_USERNAME: ${FEEDBACK_POSTGRES_DB}
+      DB_PASSWORD: ${FEEDBACK_POSTGRES_PASSWORD}
+      BUCKET_KEY: ${FEEDBACK_BUCKET_KEY}
+      ACCESS_KEY_ID: ${MINIO_ROOT_USER}
+      SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
+      ENDPOINT: ${MINIO_URL}
+      REGION: ${FEEDBACK_AWS_REGION}
+      ADMIN_PASSWORD: ${FEEDBACK_ADMIN_PASSWORD}
+      PUPPETER_TIME_OUT: 405000
+      SMTP_LOGIN: ${FEEDBACK_SMTP_LOGIN}
+      SMTP_PASSWORD: ${FEEDBACK_SMTP_PASSWORD}
+      SMTP_PORT: ${FEEDBACK_SMTP_PORT}
+      SMTP_SERVER: ${FEEDBACK_SMTP_SERVER}
+      SMTP_SECURE: ${FEEDBACK_SMTP_SECURE}
+      FEEDBACK_SENDER: ${FEEDBACK_SENDER}
+      TEST_EMAIL: ${FEEDBACK_TEST_EMAIL}
+      APP_FILE: 
+      DEFAULT_THEME: 
+
+  feedback-front:
+    image: blsq/feedback-front:${FEEDBACK_FRONT_VERSION}
+    ports:
+      - "6001:3000"
+    stdin_open: true
+    environment:
+      REACT_APP_DHIS2_URL: ${FEEDBACK_REACT_APP_DHIS2_URL}
+      REACT_APP_USER: ${FEEDBACK_REACT_APP_USER}
+      REACT_APP_PASSWORD: ${FEEDBACK_REACT_APP_PASSWORD}
+      REACT_APP_TOKEN_NAME: ${FEEDBACK_REACT_APP_TOKEN_NAME}
+      REACT_APP_API_URL: ${FEEDBACK_REACT_APP_API_URL}
+      REACT_APP_URL: ${FEEDBACK_REACT_APP_URL}
+        
+networks:
+  proxy:
+    external: true     

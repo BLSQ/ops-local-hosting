@@ -7,3 +7,4 @@ playbooks/docker/netdata/storage
 playbooks/docker/hesabu/storage
 playbooks/docker/enketo/storage
 playbooks/docker/iaso/storage
+playbooks/docker/feedback-loop/storage

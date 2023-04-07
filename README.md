@@ -218,6 +218,7 @@ see these documents
 - [hesabu](./docs/restore-hesabu.md)
 - [dataviz](./docs/restore-dataviz.md)
 - [d2d](./docs/restore-d2d.md)
+- [feedback-loop](./docs/restore-feedback-loop.md)
 
 ## Setup backups
 

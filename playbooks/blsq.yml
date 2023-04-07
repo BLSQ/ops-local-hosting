@@ -95,7 +95,7 @@
           compose_template: docker/minio/docker-compose.yml
           env_template: docker/minio.env
           unit_template: docker-compose/compose-unit.j2
-          used_by: "iaso dataviz hesabu d2d"
+          used_by: "iaso dataviz hesabu d2d feedback-loop"
         - name: iaso
           enabled: yes
           need_restart: yes
@@ -144,6 +144,14 @@
           env_template: docker/dhis2.env
           unit_template: docker-compose/compose-unit.j2
           used_by: "dhis2"
+        - name: feedback-loop
+          enabled: yes
+          need_restart: yes
+          root_dir: /srv/docker/feedback-loop
+          compose_template: docker/feedback-loop/docker-compose.yml
+          env_template: docker/feedback-loop.env
+          unit_template: docker-compose/compose-unit.j2
+          used_by: "feedback-loop"
         - name: traefik
           enabled: yes
           need_restart: yes
@@ -151,7 +159,7 @@
           compose_template: "docker/traefik/docker-compose-tls-{{TLS_ENABLED}}.yml"
           env_template: docker/traefik.env
           unit_template: docker-compose/compose-unit.j2
-          used_by: "iaso dataviz hesabu d2d dhis2"
+          used_by: "iaso dataviz hesabu d2d dhis2 feedback-loop"
         - name: netdata
           enabled: yes
           need_restart: yes
