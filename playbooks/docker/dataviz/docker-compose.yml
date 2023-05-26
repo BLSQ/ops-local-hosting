@@ -75,8 +75,8 @@ services:
       - "ofelia.job-exec.cache-warmup.schedule=0 0 1 * * *"
       - "ofelia.job-exec.cache-warmup.command=bundle exec rake cache_warmup:run"
       # Excel exports at 4 am
-      - "ofelia.job-exec.duplicate_jobs.schedule=0 0 4 * * *"
-      - "ofelia.job-exec.duplicate_jobs.command=bundle exec rake sheet_export:run"
+      - "ofelia.job-exec.sheet_export.schedule=0 0 4 * * *"
+      - "ofelia.job-exec.sheet_export.command=bundle exec rake sheet_export:run"
       # Clean up the cache at noon
       - "ofelia.job-exec.duplicate_jobs.schedule=0 0 12 * * *"
       - "ofelia.job-exec.duplicate_jobs.command=bundle exec rake cache_warmup:cleanup"
