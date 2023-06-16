@@ -12,6 +12,7 @@ services:
       - 8080:8080
     networks: 
       - proxy
+      - default
     labels:
       - 'traefik.enable=true'
       - 'traefik.docker.network=proxy'
