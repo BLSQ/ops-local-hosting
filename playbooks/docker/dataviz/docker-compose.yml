@@ -10,10 +10,14 @@ services:
       POSTGRES_DB: ${DATAVIZ_POSTGRES_DB}
 
   memcached:
-    image: bitnami/memcached:latest
+    image: memcached:latest
     environment:
       - MEMCACHED_USERNAME=memcached
       - MEMCACHED_PASSWORD=${DATAVIZ_MEMCACHE_PASSWORD}
+    ports:
+      - "11211:11211"
+    networks: 
+      - default
 
   redis:
     image: redis:${DATAVIZ_REDIS_VERSION}
@@ -32,6 +36,7 @@ services:
     depends_on:
       - db
       - redis
+      - memcached
     environment:
       - REDIS_URL=redis://:${DATAVIZ_REDIS_PASSWORD}@redis:6379
       - DATABASE_URL=postgres://${DATAVIZ_POSTGRES_USER}:${DATAVIZ_POSTGRES_PASSWORD}@db:5432/${DATAVIZ_POSTGRES_DB}
@@ -47,6 +52,7 @@ services:
       - AWS_FRONT_OFFICE_RESOURCES_BUCKET=dataviz
       - AWS_MANAGER_BUCKET=dataviz-manager-build
       - AWS_PROJECT_BUCKET=dataviz/production
+      - S3_GEOJSONS_BUCKET=geojson-countries
       - CACHE_DURATION_IN_MINUTES=129600
       - DHIS2_PARALLELISM=2
       - MALLOC_ARENA_MAX=2
@@ -118,6 +124,7 @@ services:
     depends_on:
       - db
       - redis
+      - memcached
     environment:
       - REDIS_URL=redis://:${DATAVIZ_REDIS_PASSWORD}@redis:6379
       - DATABASE_URL=postgres://${DATAVIZ_POSTGRES_USER}:${DATAVIZ_POSTGRES_PASSWORD}@db:5432/${DATAVIZ_POSTGRES_DB}
@@ -133,6 +140,7 @@ services:
       - AWS_FRONT_OFFICE_RESOURCES_BUCKET=dataviz
       - AWS_MANAGER_BUCKET=dataviz-manager-build
       - AWS_PROJECT_BUCKET=dataviz/production
+      - S3_GEOJSONS_BUCKET=geojson-countries
       - CACHE_DURATION_IN_MINUTES=129600
       - DHIS2_PARALLELISM=2
       - MALLOC_ARENA_MAX=2
