@@ -52,5 +52,8 @@ tar -xvzf ../dataviz-logos.tar.gz
 cd tmp/
 cd bf8bcaa7-7adf-4a07-ae3d-b6163e929971/
 mc cp --continue --recursive ./uploads/ localhostminio/dataviz/production/uploads
+wget "https://geojson-countries.s3.eu-west-1.amazonaws.com/<country>.geo.json"
+mc cp --continue bfa.geo.json localhostminio/geojson-countries/<country>.geo.json
+rm <country>.geo.json
 rm dataviz-logos.tar.gz
 ```

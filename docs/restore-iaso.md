@@ -22,7 +22,7 @@ mc alias set localhostminio $AWS_S3_ENDPOINT_URL $AWS_ACCESS_KEY_ID $AWS_SECRET_
 mc admin info localhostminio
 mc ls localhostminio
 
-mc policy set download hesabu-minio/iaso-prod;
+mc policy set download localhostminio/iaso-prod
 mc anonymous set download localhostminio/iaso-prod/iasostatics/
 mc anonymous set public localhostminio/iaso-prod/iasostatics/
 ```
