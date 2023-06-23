@@ -22,6 +22,9 @@ services:
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
       - "--entryPoints.ping.address=:8082"
+      # allow upstream nginx to set the X-Forward headers
+      - "--entryPoints.web.proxyProtocol.insecure"
+      - "--entryPoints.web.forwardedHeaders.insecure"
 
       ## API Settings
       - "--api.dashboard=true"
