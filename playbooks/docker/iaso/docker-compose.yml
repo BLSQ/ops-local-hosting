@@ -62,11 +62,11 @@ services:
 {% if TLS_ENABLED %}
       - "traefik.http.routers.iaso.entrypoints=websecure"
       - "traefik.http.routers.iaso.middlewares=no-auth-secured@file"
-      - "traefik.http.routers.iaso.rule=Host(`iaso.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.iaso.rule=Host(`${IASO_DOMAIN_NAME}`)"
       - "traefik.http.routers.iaso.tls.certresolver=lets-encrypt"
       - "traefik.http.routers.iaso.tls.options=mintls12@file"
 {% else %}
-      - "traefik.http.routers.iaso.rule=Host(`iaso.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.iaso.rule=Host(`${IASO_DOMAIN_NAME}`)"
       - "traefik.http.routers.iaso.entrypoints=web"
 {% endif %}
       - "traefik.http.services.iaso.loadbalancer.passhostheader=true"
