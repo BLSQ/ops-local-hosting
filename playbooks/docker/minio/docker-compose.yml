@@ -29,7 +29,7 @@ services:
 
       - "traefik.http.routers.minio-ui.entrypoints=websecure"
       - "traefik.http.routers.minio-ui.middlewares=no-auth-secured@file"
-      - "traefik.http.routers.minio-ui.rule=Host(`minio-admin.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.minio-ui.rule=Host(`${MINIO_CONSOLE_DOMAIN_NAME}`)"
       - "traefik.http.routers.minio-ui.tls.certresolver=lets-encrypt"
       - "traefik.http.routers.minio-ui.tls.options=mintls12@file"
       - "traefik.http.routers.minio-ui.service=minio-ui"
@@ -45,7 +45,7 @@ services:
 
       - "traefik.http.routers.minio-ui.entrypoints=web"
       - "traefik.http.routers.minio-ui.middlewares=no-auth-secured@file"
-      - "traefik.http.routers.minio-ui.rule=Host(`minio-admin.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.minio-ui.rule=Host(`${MINIO_CONSOLE_DOMAIN_NAME}`)"
       - "traefik.http.routers.minio-ui.service=minio-ui"
       - "traefik.http.services.minio-ui.loadbalancer.server.port=9001"
       - "traefik.http.services.minio-ui.loadbalancer.passhostheader=true"

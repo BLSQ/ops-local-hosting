@@ -104,7 +104,7 @@ services:
 
       - "traefik.http.routers.portainer-secured.entrypoints=websecure"
       - "traefik.http.routers.portainer-secured.middlewares=no-auth-secured@file"
-      - "traefik.http.routers.portainer-secured.rule=Host(`portainer.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.portainer-secured.rule=Host(`${PORTAINER_DOMAINE_NAME}`)"
       - "traefik.http.routers.portainer-secured.tls.certresolver=lets-encrypt"
       - "traefik.http.routers.portainer-secured.tls.options=mintls12@file"
 
