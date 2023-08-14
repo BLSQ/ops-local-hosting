@@ -1,4 +1,4 @@
-## minio debug/testing
+# minio debug/testing
 
 ```
 sudo docker exec --detach-keys='ctrl-@'  -it  iaso_iaso_1 bash
@@ -26,6 +26,8 @@ mc policy set download localhostminio/iaso-prod
 mc anonymous set download localhostminio/iaso-prod/iasostatics/
 mc anonymous set public localhostminio/iaso-prod/iasostatics/
 ```
+
+# Restore with existing data
 
 ## Restore db from dump
 
@@ -65,3 +67,26 @@ mc cp --continue --recursive ./instances/ localhostminio/iaso-prod/instances
 mc cp --continue --recursive ./forms/ localhostminio/iaso-prod/forms
 mc cp --continue --recursive ./instancefiles/ localhostminio/iaso-prod/instancefiles
 ```
+# Setup Iaso with empty data
+
+Assuming you have mc binary and alias configured
+and received a presigned url
+
+- Download JS assets
+
+```
+sudo docker exec --detach-keys='ctrl-@'  -it  iaso_iaso_1 bash
+./manage.py collectstatic
+```
+
+- Create a superuser
+
+To log in to the api or the Django admin, a superuser needs to be created with:
+
+```
+./manage.py createsuperuser
+```
+
+Now log in at the api section to create the first user : https://iaso.<domain_name>/api/setupaccount
+
+Then use this user's credentials to log into the IASO interface: https://iaso.<domain_name>
