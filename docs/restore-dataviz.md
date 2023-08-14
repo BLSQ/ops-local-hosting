@@ -1,4 +1,6 @@
-# Restore the pg dump
+# Restore with existing data
+
+## Restore the pg dump
 
 Start a bash in the context of dataviz backend
 
@@ -39,7 +41,7 @@ Once the dataviz starts looking okish (some branding showed, perhaps not all the
 bundle exec rake cache_warmup:run
 ```
 
-# Restore the logos and publications in minio
+## Restore the logos and publications in minio
 
 Assuming you have mc binary and alias configured
 and received a presigned url
@@ -56,4 +58,45 @@ wget "https://geojson-countries.s3.eu-west-1.amazonaws.com/<country>.geo.json"
 mc cp --continue bfa.geo.json localhostminio/geojson-countries/<country>.geo.json
 rm <country>.geo.json
 rm dataviz-logos.tar.gz
+```
+
+# Restore with empty data
+
+## Restore the pg dump with schema and migrations only
+
+Start a bash in the context of dataviz backend
+
+```
+cd /srv/docker/dataviz/
+docker-compose ps
+docker-compose run dataviz-backend bash
+```
+
+Then download the pg dump with schema only and restore it
+
+```
+wget "https://bls.s3.eu-west-1.amazonaws.com/localhosting/dataviz-empty.dump?presigne...durl" -O dataviz-empty.dump
+
+pg_restore --verbose --clean --no-acl --no-owner -d $DATABASE_URL dataviz-empty.dump
+```
+
+After that download the pg dump with migrations and restore it
+
+
+```
+wget "https://bls.s3.eu-west-1.amazonaws.com/localhosting/dataviz-migrations.dump?presigne...durl" -O dataviz-migrations.dump
+
+pg_restore --verbose --no-acl --no-owner -d $DATABASE_URL dataviz-migrations.dump
+```
+
+
+## Add the geojson file of country in minio
+
+Assuming you have mc binary and alias configured
+and received a presigned url
+
+```
+wget "https://geojson-countries.s3.eu-west-1.amazonaws.com/<country>.geo.json"
+mc cp --continue bfa.geo.json localhostminio/geojson-countries/<country>.geo.json
+rm <country>.geo.json
 ```
