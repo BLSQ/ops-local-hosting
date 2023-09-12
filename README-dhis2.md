@@ -112,3 +112,12 @@ pg_restore \
 
 ## Restore in local dhis2 data from s3
 
+We will provide you with a presigned S3 URL to upload the zipped folder.
+
+And you can follow these steps to restore the data.
+
+```
+tar -xvzf dhis2-<name>.tar.gz 
+docker cp dhis2-<name>/apps/ dhis2_dhis2_1:/root/files/
+docker cp dhis2-<name>/dataValue/ dhis2_dhis2_1:/root/files/
+```
