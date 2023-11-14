@@ -47,13 +47,13 @@ services:
 {% if TLS_ENABLED %}
       - "traefik.http.routers.enketo.entrypoints=websecure"
       - "traefik.http.routers.enketo.middlewares=no-auth-secured@file"
-      - "traefik.http.routers.enketo.rule=Host(`enketo.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.enketo.rule=Host(`${ENKETO_DOMAIN_NAME}`)"
       - "traefik.http.routers.enketo.tls.certresolver=lets-encrypt"
       - "traefik.http.routers.enketo.tls.options=mintls12@file"
 {% else %}
       - "traefik.http.routers.enketo.entrypoints=web"
       - "traefik.http.routers.enketo.middlewares=no-auth-secured@file"
-      - "traefik.http.routers.enketo.rule=Host(`enketo.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.enketo.rule=Host(`${ENKETO_DOMAIN_NAME}`)"
 {% endif %}
       - "traefik.http.services.enketo.loadbalancer.passhostheader=true"
 
