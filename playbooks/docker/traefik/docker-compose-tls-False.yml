@@ -40,7 +40,7 @@ services:
       - "--metrics.prometheus.addServicesLabels=true"
       - traefik.http.routers.metrics.entrypoints=web
       - traefik.http.routers.metrics.middlewares=basic-auth-secured@file'
-      - traefik.http.routers.metrics.rule=Host(`metrics.${DOMAIN_NAME}`)
+      - traefik.http.routers.metrics.rule=Host(`${METRICS_DOMAIN_NAME}`)
       - traefik.http.routers.metrics.service=prometheus@internal
 
     container_name: "traefik-v2"
@@ -60,7 +60,7 @@ services:
 
       - "traefik.http.routers.traefik-secured.entrypoints=web"
       - "traefik.http.routers.traefik-secured.middlewares=basic-auth-secured@file"
-      - "traefik.http.routers.traefik-secured.rule=Host(`traefik.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.traefik-secured.rule=Host(`${TRAEFIK_DOMAIN_NAME}`)"
       - "traefik.http.routers.traefik-secured.service=api@internal"
 
     restart: "unless-stopped"

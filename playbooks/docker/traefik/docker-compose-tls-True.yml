@@ -48,7 +48,7 @@ services:
       - "--metrics.prometheus.addServicesLabels=true"
       - traefik.http.routers.metrics.entrypoints=websecure
       - traefik.http.routers.metrics.middlewares=basic-auth-secured@file'
-      - traefik.http.routers.metrics.rule=Host(`metrics.${DOMAIN_NAME}`)
+      - traefik.http.routers.metrics.rule=Host(`${METRICS_DOMAIN_NAME}`)
       - traefik.http.routers.metrics.service=prometheus@internal
       - traefik.http.routers.metrics.tls.certresolver=lets-encrypt
       - traefik.http.routers.metrics.tls.options=mintls12@file
@@ -60,8 +60,8 @@ services:
       - "./.htpasswd:/.htpasswd"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     ports:
-      - "443:443"
-      - "80:80"
+      - "${TRAEFIK_HTTPS_PORT:-443}:443"
+      - "${TRAEFIK_HTTP_PORT:-80}:80"
     networks:
       - "proxy"
     labels:
@@ -70,7 +70,7 @@ services:
 
       - "traefik.http.routers.traefik-secured.entrypoints=websecure"
       - "traefik.http.routers.traefik-secured.middlewares=basic-auth-secured@file"
-      - "traefik.http.routers.traefik-secured.rule=Host(`traefik.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.traefik-secured.rule=Host(`${TRAEFIK_DOMAIN_NAME}`)"
       - "traefik.http.routers.traefik-secured.service=api@internal"
       - "traefik.http.routers.traefik-secured.tls.certresolver=lets-encrypt"
       - "traefik.http.routers.traefik-secured.tls.options=mintls12@file"
