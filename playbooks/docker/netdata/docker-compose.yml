@@ -20,13 +20,13 @@ services:
 {% if TLS_ENABLED %}
       - 'traefik.http.routers.netdata.entrypoints=websecure'
       - 'traefik.http.routers.netdata.middlewares=basic-auth-secured@file'
-      - 'traefik.http.routers.netdata.rule=Host(`netdata.${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.netdata.rule=Host(`${NETDATA_DOMAIN_NAME}`)'
       - 'traefik.http.routers.netdata.tls.certresolver=lets-encrypt'
       - 'traefik.http.routers.netdata.tls.options=mintls12@file'
 {% else %}
       - 'traefik.http.routers.netdata.entrypoints=web'
       - 'traefik.http.routers.netdata.middlewares=basic-auth-secured@file'
-      - 'traefik.http.routers.netdata.rule=Host(`netdata.${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.netdata.rule=Host(`${NETDATA_DOMAIN_NAME}`)'
 {% endif %}
       - "traefik.http.services.netdata.loadbalancer.passhostheader=true"      
     environment:      
