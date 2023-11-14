@@ -39,13 +39,13 @@ services:
 {% if TLS_ENABLED %}
       - 'traefik.http.routers.d2d-frontend.entrypoints=websecure'
       - 'traefik.http.routers.d2d-frontend.middlewares=no-auth-secured@file'
-      - 'traefik.http.routers.d2d-frontend.rule=Host(`d2d.${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.d2d-frontend.rule=Host(`${D2D_DOMAIN_NAME}`)'
       - 'traefik.http.routers.d2d-frontend.tls.certresolver=lets-encrypt'
       - 'traefik.http.routers.d2d-frontend.tls.options=mintls12@file'
 {% else %}
       - 'traefik.http.routers.d2d-frontend.entrypoints=web'
       - 'traefik.http.routers.d2d-frontend.middlewares=no-auth-secured@file'
-      - 'traefik.http.routers.d2d-frontend.rule=Host(`d2d.${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.d2d-frontend.rule=Host(`${D2D_DOMAIN_NAME}`)'
 {% endif %}
       - "traefik.http.services.d2d-frontend.loadbalancer.passhostheader=true"
 
