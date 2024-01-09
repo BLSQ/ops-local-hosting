@@ -100,3 +100,21 @@ wget "https://geojson-countries.s3.eu-west-1.amazonaws.com/<country>.geo.json"
 mc cp --continue bfa.geo.json localhostminio/geojson-countries/<country>.geo.json
 rm <country>.geo.json
 ```
+
+# Deploy Dataviz Manager
+
+Get a presigned url from https://s3.console.aws.amazon.com/s3/buckets/dataviz-manager-build?region=eu-west-1&tab=objects for build.tgz
+
+```
+sudo docker exec --detach-keys='ctrl-@' dataviz_dataviz-backend_1 bash
+wget "https://dataviz-manager-build.s3.eu-west-1.amazonaws.com/build.tgz?PRESIGNED_URL" -O /tmp/dv-build.tgz
+apk add --upgrade zip curl curl-dev
+bundle exec rake manager:build
+```
+Upload the zip file and install the app.
+Replace the variables: `dhis2_user`, `dhis2_password` and `dhis2_url`
+
+```
+curl -s -H 'Accept: application/json' -X POST -u '#{dhis2_user}:#{dhis2_password}' --compressed -F file=@ledataviz.zip #{dhis2_url}/api/apps --output /dev/null
+curl -s -X PUT -u '#{dhis2_user}:#{dhis2_password}' -H 'Accept: application/json' #{dhis2_url}/api/apps
+```
