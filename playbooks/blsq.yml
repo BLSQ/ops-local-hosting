@@ -168,4 +168,12 @@
           env_template: docker/netdata.env
           unit_template: docker-compose/compose-unit.j2
           used_by: "netdata"
+        - name: restic
+          enabled: yes
+          need_restart: yes
+          root_dir: /srv/docker/restic
+          compose_template: docker/restic/docker-compose.yml
+          env_template: docker/restic.env
+          unit_template: docker-compose/compose-unit.j2
+          used_by: "restic"
     - docker_services: "{{ all_docker_services | selectattr('used_by', 'match', blsq_products_regexp)}}"
