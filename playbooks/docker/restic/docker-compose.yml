@@ -1,0 +1,34 @@
+version: "3.8"
+services:
+  ofelia:
+    image: mcuadros/ofelia:latest
+    container_name: ofelia
+    depends_on:
+      - restic-backup
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command: daemon --docker -f label=com.docker.compose.project=restic
+    restart: always
+
+  restic-backup:
+    image: restic/restic:latest
+    env_file: .env
+    volumes:
+      - /home/backups:/home/backups
+    entrypoint: "sleep infinity"
+    labels:
+      - "ofelia.enabled=true"
+      # Backup the /home/backups directory
+      - "ofelia.job-exec.restic-backup.schedule=0 0 1 * * *"
+      - "ofelia.job-exec.restic-backup.command=/usr/bin/restic backup /home/backups"
+      # Remove stale locks that have been created by other restic processes
+      - "ofelia.job-exec.restic-unlock.schedule=0 30 1 * * *"
+      - "ofelia.job-exec.restic-unlock.command=/usr/bin/restic unlock"
+      # Delete snapshots based on specific retention policies. Ex: --keep-daily 7: for the last 7 days which have one or more snapshots, keep only the most recent one for each day.
+      - "ofelia.job-exec.restic-forget.schedule=0 35 1 * * *"
+      - "ofelia.job-exec.restic-forget.command=/usr/bin/restic forget --keep-daily 7 --keep-weekly 5 --keep-monthly 12 --keep-yearly 75"
+      # Find and delete data that is not referenced and therefore not needed any more
+      - "ofelia.job-exec.restic-prune.schedule=0 40 1 * * *"
+      - "ofelia.job-exec.restic-prune.command=/usr/bin/restic prune"
+
+
