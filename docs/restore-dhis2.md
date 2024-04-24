@@ -18,7 +18,7 @@ ansible-galaxy install -r requirements.yml
 
 ## Connect to server
 
-You can configure your ~/.ssh/config to connect easily
+You can configure your ~/.ssh/config to connect easily.
 
 ```
 Host dhis2-server
@@ -36,9 +36,9 @@ ssh dhis2-server
 ```
 ## Inventory template 
 
-You must provide a file to store your inventory.
+You need to provide a file to store your inventory.
 
-In this inventory, provide values of all environment variables defined into `.env` file.
+Specify the values of the mandatory environment variables defined in the [dhis2.env](https://github.com/BLSQ/ops-local-hosting/blob/main/playbooks/docker/dhis2.env) file.
 
 Here is an example of template:
 
@@ -47,7 +47,7 @@ all:
   children:
     dhis2:
       hosts:
-        IP_ADDRESS>:
+        <IP_ADDRESS>:
           TRAEFIK_PWD: <TRAEFIK_PWD>
           TRAEFIK_USER: <TRAEFIK_PWD>
           ansible_ssh_private_key_file: <PEM_FILE>
@@ -55,8 +55,8 @@ all:
           DOMAIN_NAME: <URL>
           ACME_EMAIL: <EMAIL>
           DHIS2_DATABASE_USER: <dhis2_user>
-          DHIS2_DATABASE_PASSWORD: <dhis2_user>
-          DHIS2_DATABASE_NAME: <dhis2_password>
+          DHIS2_DATABASE_PASSWORD: <dhis2_password>
+          DHIS2_DATABASE_NAME: <dhis2_db_name>
           DHIS2_DATABASE_HOST: <database_hostname>
           DHIS2_POSTGRES_VERSION: <dhis2_postgres_version>
           DHIS2_DOMAIN_NAME: <dhis2_url>
@@ -69,7 +69,7 @@ all:
 ``` 
 ## Set up DHIS2 with Postgresql
 
-From the server, you will run the follow command to install and configure Postgresql and deploy DHIS2.
+Run the following command to install and configure Postgresql on the host and deploy DHIS2 with docker.
 
 ```
 ansible-playbook -i <INVENTORY> playbooks/blsq.yml
@@ -79,20 +79,24 @@ Checking the status and logs
 
 ```
 systemctl status dhis2 
+systemctl status traefik 
+
 journalctl -u dhis2
+journalctl -u traefik
+
 ```
 
-## Restore DB
+## Restore DHIS2 DB
 
 Then we will provide you with a presigned S3 URL to upload the dump.
 
-And you can follow these steps to restore the dump.
+As the database is on the host, follow these steps to download the dump.
 
 ```
 ssh dhis2-server
 sudo su - postgres
-curl 'S3_URL' -o <BUCKET_NAME>.dump.gz
-unzip <BUCKET_NAME>.dump.gz
+wget 'S3_presigned_url' -O dhis2-db.dump.gz
+gzip -d dhis2-db.dump.gz
 
 ```
 
@@ -106,18 +110,27 @@ pg_restore \
       --clean \
       --jobs=6 \
       --no-owner \
-      --dbname="<dhis_db_name>" \
-      <BUCKET_NAME>.dump.gz
+      --dbname="<dhis2_db_name>" \
+      dhis2-db.dump.gz
 ```
 
-## Restore in local dhis2 data from s3
+## Restore DHIS2 files from s3
 
 We will provide you with a presigned S3 URL to upload the zipped folder.
 
-And you can follow these steps to restore the data.
+Download it on the host inside dhis2 container and restore it.
 
 ```
-tar -xvzf dhis2-<name>.tar.gz 
-docker cp dhis2-<name>/apps/ dhis2_dhis2_1:/root/files/
-docker cp dhis2-<name>/dataValue/ dhis2_dhis2_1:/root/files/
+# download dump
+docker exec -it dhis2_dhis2_1 bash 
+wget "S3_presigned_url" -O dhis2-files.tar.gz 
+
+# unzip it
+tar -xvzf dhis2-files.tar.gz 
+
+# then restore
+mv dhis2-files/apps/ files/
+mv dhis2-files/dataValue/ files/
 ```
+
+
