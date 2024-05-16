@@ -29,7 +29,7 @@ Update inventory with the new dhis2 version that you want.
 ansible-playbook -i <inventory_path> playbooks/blsq.yml
 ```
 
-## Restart iaso and check the status
+## Restart dhis2 and check the status
 
 ```
 sudo systemctl restart dhis2
