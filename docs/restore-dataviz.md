@@ -106,7 +106,7 @@ rm <country>.geo.json
 Get a presigned url from https://s3.console.aws.amazon.com/s3/buckets/dataviz-manager-build?region=eu-west-1&tab=objects for build.tgz
 
 ```
-sudo docker exec --detach-keys='ctrl-@' dataviz_dataviz-backend_1 bash
+sudo docker exec --detach-keys='ctrl-@' -it dataviz_dataviz-backend_1 bash
 wget "https://dataviz-manager-build.s3.eu-west-1.amazonaws.com/build.tgz?PRESIGNED_URL" -O /tmp/dv-build.tgz
 apk add --upgrade zip curl curl-dev
 bundle exec rake manager:build
