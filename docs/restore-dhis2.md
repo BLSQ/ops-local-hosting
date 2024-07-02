@@ -111,7 +111,7 @@ pg_restore \
       --jobs=6 \
       --no-owner \
       --dbname="<dhis2_db_name>" \
-      dhis2-db.dump.gz
+      dhis2-db.dump
 ```
 
 ## Restore DHIS2 files from s3
