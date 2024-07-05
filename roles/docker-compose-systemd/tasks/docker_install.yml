@@ -33,10 +33,14 @@
     pip_install_packages:
       - name: docker
 
-- name: Setup proxy network
-  community.docker.docker_network:
-    name: proxy
-    driver: bridge
+- name: Check if Docker network 'proxy' exists
+  command: "docker network ls --filter name=proxy -q"
+  register: proxy_network_id
+  changed_when: false
+
+- name: Create Docker network 'proxy' if it doesn't exist
+  command: docker network create -d bridge proxy
+  when: proxy_network_id.stdout == ""
 
 - name: Create Docker clean up cron job
   cron:
