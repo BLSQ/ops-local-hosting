@@ -32,16 +32,34 @@ The json file is stored in `/home/backups`.
 sudo ./toolbox iaso diagnose cli iaso_1
 ```
 
-## Setup postgres backups as a cron 
+## Trigger postgres backups as a cron 
 
+Edit crontab file
 ```
-# Edit crontab file
 crontab -e 
-
-# Add line containing cron expression 
+```
+Add line containing cron expression 
+```
 0 0 * * *  sudo ./toolbox dataviz dump dataviz-worker >/dev/null 2>&1
 0 1 * * *  sudo ./toolbox hesabu dump hesabu-worker >/dev/null 2>&1
 0 2 * * *  sudo ./toolbox iaso dump iaso_1 >/dev/null 2>&1
 
 ```
 
+## Delete old postgres backups and keep the 7 most recent files as cron 
+
+Download the cleanup_backups script 
+```
+curl https://raw.githubusercontent.com/BLSQ/ops-local-hosting-toolbox/main/cleanup_backups -o cleanup_backups
+chmod u+x cleanup_backups
+```
+
+Edit crontab file
+```
+crontab -e 
+```
+
+Schedule the script with cron
+```
+0 8 * * * sudo ./cleanup_backups
+```
