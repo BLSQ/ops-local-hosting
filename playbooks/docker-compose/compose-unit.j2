@@ -4,8 +4,8 @@ After=docker.service
 
 [Service]
 WorkingDirectory={{ item.root_dir }}
-ExecStart=/usr/local/bin/docker-compose -f {{ item.root_dir }}/docker-compose.yml up
-ExecStop=/usr/local/bin/docker-compose -f {{ item.root_dir }}/docker-compose.yml down
+ExecStart=docker compose -f {{ item.root_dir }}/docker-compose.yml up
+ExecStop=docker compose -f {{ item.root_dir }}/docker-compose.yml down
 
 [Install]
 WantedBy=docker.service
