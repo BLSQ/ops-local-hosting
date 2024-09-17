@@ -27,7 +27,7 @@
     - {name: 'checkpoint_completion_target', value: '{{postgres_checkpoint_completion_target | default(0.8)}}'}
     - {name: 'synchronous_commit', value: '{{postgres_synchronous_commit | default("off")}}'}
     - {name: 'wal_writer_delay', value: '{{postgres_wal_writer_delay | default("10000ms")}}'}
-    - {name: 'random_page_cost', value: '{{postgres_random_page_cost | default(1)}}'}
+    - {name: 'random_page_cost', value: '{{postgres_random_page_cost | default(1.1)}}'}
     - {name: 'max_locks_per_transaction', value: '{{postgres_max_locks_per_transaction | default(96)}}'}
     - {name: 'jit', value: '{{postgres_jit | default("off")}}'}
   become_user: postgres
