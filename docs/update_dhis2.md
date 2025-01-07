@@ -26,6 +26,8 @@ Update inventory with the new dhis2 version that you want.
 ## Launch ansible playbook
 
 ```
+cd ops-local-hosting
+source env/bin/activate
 ansible-playbook -i <inventory_path> playbooks/blsq.yml
 ```
 
