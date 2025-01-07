@@ -20,7 +20,7 @@ Then update the inventory to put the new iaso version by replacing the value of 
 ## Launch ansible playbook
 
 ```
-cd /ops-local-hosting
+cd ops-local-hosting
 source env/bin/activate
 ansible-playbook -i <inventory_path> playbooks/blsq.yml
 ```
