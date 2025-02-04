@@ -72,7 +72,17 @@
       template:
         src: "docker/dataviz/config/front/env.json"
         dest: "/srv/docker/dataviz/config/front/env.json"
-
+    - name: Download the toolbox script
+      get_url:
+        url: https://raw.githubusercontent.com/BLSQ/ops-local-hosting-toolbox/main/run
+        dest: ~/toolbox
+        mode: '0755' 
+    - name: Download the cleanup backup script
+      get_url:
+        url: https://raw.githubusercontent.com/BLSQ/ops-local-hosting-toolbox/main/cleanup_backups
+        dest: ~/cleanup_backups
+        mode: '0755' 
+        
 - hosts: iaso
   tags: setup-dhis2-postgresql
   become: yes

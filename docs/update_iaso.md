@@ -8,7 +8,7 @@ sudo ./toolbox iaso dump iaso_1
 
 ## Update inventory with new product image
 
-To update the iaso version, retrieve the commit sha of recent [release](https://github.com/BLSQ/iaso/tags) which will be the iaso version.
+To update the iaso version, retrieve the commit sha of recent [release](https://github.com/BLSQ/iaso/releases) which will be the iaso version.
 
 Then update the inventory to put the new iaso version by replacing the value of `IASO_VERSION` by this commit sha.
 
@@ -20,6 +20,8 @@ Then update the inventory to put the new iaso version by replacing the value of 
 ## Launch ansible playbook
 
 ```
+cd ops-local-hosting
+source env/bin/activate
 ansible-playbook -i <inventory_path> playbooks/blsq.yml
 ```
 

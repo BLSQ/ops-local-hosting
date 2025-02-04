@@ -270,3 +270,5 @@ A last step is to have your production dhis2 talk to the new/correct servers.
 - watch diskspace (most database will grow)
 - check server availability (like pingdom or other similar product)
 - check backups are produced, moved to a safe off site location, cleaned from the machine
+- upgrades to ensure the host service is secure
+  

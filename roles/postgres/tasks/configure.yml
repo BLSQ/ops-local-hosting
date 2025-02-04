@@ -1,30 +1,37 @@
 ---
+- name: Calculate postgres default values
+  set_fact:
+    default_shared_buffers: "{{ ((ansible_memtotal_mb * 0.5 / 1024.0) | round | int * 0.25) | int * 1024 }}MB"
+    default_work_mem: "{{ ((((ansible_memtotal_mb*0.5/1024.0)|round|int)*0.25)/(postgres_max_connections | default(200))*1024)|round|int }}MB"
+    default_maintenance_work_mem: "{{ ((ansible_memtotal_mb*0.5/1024.0)|round|int)*64 }}MB"
+    default_effective_cache_size: "{{ (((ansible_memtotal_mb*0.5/1024.0)|round|int)*0.75)|int*1024 }}MB"
+- name: debug info 
+  debug:
+    msg: 
+    - "Suggested shared_buffers: {{ default_shared_buffers }}"
+    - "Suggested work_mem: {{ default_work_mem }}"
+    - "Suggested maintenance_work_mem: {{ default_maintenance_work_mem }}"
+    - "Suggested effective_cache_size: {{ default_effective_cache_size }}"
+
 - name: "Set postgres config"
   postgresql_set:
     name: "{{ item.name }}"
     value: "{{ item.value }}"
   with_items:
-    - {name: 'listen_addresses', value: '*'}
-    - {name: 'max_connections', value: '{{postgres_max_connections}}'}
-    - {name: 'shared_buffers', value: '{{postgres_shared_buffers}}'}
-    - {name: 'work_mem', value: '{{postgres_work_mem}}'}
-    - {name: 'maintenance_work_mem', value: '{{postgres_maintenance_work_mem}}'}
-    - {name: 'effective_cache_size', value: '{{postgres_effective_cache_size}}'}
-    - {name: 'checkpoint_completion_target', value: '{{postgres_checkpoint_completion_target}}'}
-    - {name: 'synchronous_commit', value: '{{postgres_synchronous_commit}}'}
-    - {name: 'wal_writer_delay', value: '{{postgres_wal_writer_delay}}'}
-    - {name: 'random_page_cost', value: '{{postgres_random_page_cost}}'}
-    - {name: 'max_locks_per_transaction', value: '{{postgres_max_locks_per_transaction}}'}
+    - {name: 'listen_addresses', value: '{{postgres_listen_addresses | default("*")}}'}
+    - {name: 'max_connections', value: '{{postgres_max_connections | default(200)}}'}
+    - {name: 'shared_buffers', value: '{{postgres_shared_buffers | default(default_shared_buffers)}}'}
+    - {name: 'work_mem', value: '{{postgres_work_mem | default(default_work_mem)}}'}
+    - {name: 'maintenance_work_mem', value: '{{postgres_maintenance_work_mem | default(default_maintenance_work_mem)}}'}
+    - {name: 'effective_cache_size', value: '{{postgres_effective_cache_size | default(default_effective_cache_size)}}'}
+    - {name: 'checkpoint_completion_target', value: '{{postgres_checkpoint_completion_target | default(0.8)}}'}
+    - {name: 'synchronous_commit', value: '{{postgres_synchronous_commit | default("off")}}'}
+    - {name: 'wal_writer_delay', value: '{{postgres_wal_writer_delay | default("10000ms")}}'}
+    - {name: 'random_page_cost', value: '{{postgres_random_page_cost | default(1.1)}}'}
+    - {name: 'max_locks_per_transaction', value: '{{postgres_max_locks_per_transaction | default(96)}}'}
+    - {name: 'jit', value: '{{postgres_jit | default("off")}}'}
   become_user: postgres
   notify: postgresql__restart_service
-
-- name: debug info
-  debug:
-    msg: 
-    - "Suggested shared_buffers: {{postgres_shared_buffers}}"
-    - "Suggested work_mem: {{postgres_work_mem}}"
-    - "Suggested maintenance_work_mem: {{postgres_maintenance_work_mem}}"
-    - "Suggested effective_cache_size: {{postgres_effective_cache_size}}"
 
 - name: "Allow connection for all user"
   postgresql_pg_hba:
