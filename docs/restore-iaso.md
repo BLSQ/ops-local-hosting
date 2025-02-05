@@ -113,7 +113,7 @@ To log in to the api or the Django admin, a superuser needs to be created with:
 
 - Log in to iaso interface with the superuser account 
 
-Now create the first user and define the necessary modules:
+Now create the first user and define the necessary modules
 
  https://iaso.<domain_name>/dashboard/setupAccount
 
