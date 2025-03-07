@@ -125,3 +125,37 @@ sudo docker compose ps
 ```
 journalctl -u iaso
 ```
+
+## Update iaso docker compose file in ops-local-hosting directory
+
+- Go the ops-local-hosting repo where you launch the ansible playbook
+
+```
+cd ops-local-hosting
+```
+- Edit the docker-compose.yml file by changing the postgis image tag to 16
+
+```
+sudo nano playbooks/docker/iaso/docker-compose.yml
+```
+```
+version: "3.3"
+services:
+  db:
+    image: blsq/postgis:16
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./storage/db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${IASO_DB_NAME}
+      POSTGRES_USER: ${IASO_DB_USER}
+      POSTGRES_PASSWORD: ${IASO_DB_PASSWORD}
+```
+- Launch the ansible playbook
+
+```
+cd ops-local-hosting
+source env/bin/activate
+ansible-playbook -i <inventory_path>> playbooks/blsq.yml
+```
