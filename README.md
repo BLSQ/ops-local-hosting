@@ -135,7 +135,10 @@ all:
 
 ```
 
-replace each `replacemeX` with a different value you can use `uuidgen | tr -d - | tr -d '\n'`
+replace each `replacemeX` with a different value you can use
+```
+uuidgen | tr -d - | tr -d '\n'
+```
 
 generate a password based for PORTAINER_PASSWORD
 
@@ -143,7 +146,8 @@ generate a password based for PORTAINER_PASSWORD
 docker run --rm httpd:2.4-alpine htpasswd -nbB admin '<<replaceme1>>' | cut -d ":" -f 2 | sed -r 's/[$]+/\$\$/g'
 ```
 
-This calls htpasswd, keep only the password part and replace $ by $$ to get it right in docker-compose yml)
+This calls htpasswd, keep only the password part and replace $ by $$ to get it right in docker-compose yml.
+
 Note that if the portainer has already started, you need to stop it, delete the volume
 
 generate a password for SECRET_KEY_BASE
