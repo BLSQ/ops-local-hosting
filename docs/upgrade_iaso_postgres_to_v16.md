@@ -70,6 +70,7 @@ sudo docker exec --detach-keys='ctrl-@'  -it  iaso_iaso_1 bash
 ```
 export DB_16=postgres://userpost:<password>@db-16/iaso
 pg_restore --format=c --verbose --no-acl --clean --jobs=6 --no-owner -d $DB_16  iaso_iaso_1-2025-01-09_13h16.dump 
+exit
 ```
 
 ## Archive db 12 volume and Rename db 16 volume
@@ -89,7 +90,7 @@ sudo mv db-16/ db
 
 - Stop service
 ```
-sudo systemctl restart iaso
+sudo systemctl stop iaso
 ```
 - Edit the docker-compose.yml file to remove the container `db-16`  and keep the container `db` by just changing postgis image
 ```
