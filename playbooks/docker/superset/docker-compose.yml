@@ -30,6 +30,7 @@ services:
       SUPERSET_SECRET_KEY: ${SUPERSET_SECRET_KEY}
       ADMIN_PASSWORD: ${SUPERSET_ADMIN_PASSWORD}
       GUEST_TOKEN_JWT_SECRET: ${SUPERSET_GUEST_TOKEN_JWT_SECRET}
+      MAPBOX_API_KEY: ${SUPERSET_MAPBOX_API_KEY}
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
