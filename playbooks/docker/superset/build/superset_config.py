@@ -39,3 +39,7 @@ HTTP_HEADERS = {
 SQL_MAX_ROW=1000000
 SQLLAB_TIMEOUT=120 # default 60
 SUPERSET_WEBSERVER_TIMEOUT=120 # default 60
+
+# Increase the max dashboard size to 10 MB, the default of 65535 bytes is too low.
+# https://github.com/apache/superset/issues/15169#issuecomment-1011902952
+SUPERSET_DASHBOARD_POSITION_DATA_LIMIT = 10000000 # 10 MB
