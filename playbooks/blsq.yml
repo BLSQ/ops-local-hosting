@@ -82,7 +82,23 @@
         url: https://raw.githubusercontent.com/BLSQ/ops-local-hosting-toolbox/main/cleanup_backups
         dest: ~/cleanup_backups
         mode: '0755' 
-        
+    - name: "create directory for superset"
+      file:
+        path: "/srv/docker/superset/build"
+        state: directory
+        recurse: yes
+    - name: "deploying superset build file"
+      template:
+        src: "docker/superset/build/Dockerfile"
+        dest: "/srv/docker/superset/build/Dockerfile" 
+    - name: "deploying superset entrypoint file"
+      template:
+        src: "docker/superset/build/entrypoint.sh"
+        dest: "/srv/docker/superset/build/entrypoint.sh"     
+    - name: "deploying superset config file"
+      template:
+        src: "docker/superset/build/superset_config.py"
+        dest: "/srv/docker/superset/build/superset_config.py" 
 - hosts: iaso
   tags: setup-dhis2-postgresql
   become: yes
@@ -186,4 +202,12 @@
           env_template: docker/restic.env
           unit_template: docker-compose/compose-unit.j2
           used_by: "restic"
+        - name: superset
+          enabled: yes
+          need_restart: yes
+          root_dir: /srv/docker/superset
+          compose_template: docker/superset/docker-compose.yml
+          env_template: docker/superset.env
+          unit_template: docker-compose/compose-unit.j2
+          used_by: "superset"
     - docker_services: "{{ all_docker_services | selectattr('used_by', 'match', blsq_products_regexp)}}"

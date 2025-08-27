@@ -1,0 +1,53 @@
+version: "3"
+services:
+  db:
+    image: postgres:${SUPERSET_POSTGRES_VERSION}
+    volumes:
+      - ./storage/db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${SUPERSET_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${SUPERSET_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${SUPERSET_POSTGRES_DB}
+
+
+  superset:
+    build:
+      context: .
+      dockerfile: ./build/Dockerfile
+    networks:
+      - proxy
+      - default
+    ports:
+      - "8088:8088"
+    depends_on:
+      - db
+    environment:
+      RDS_HOSTNAME: ${SUPERSET_POSGTRES_HOST:-db}
+      RDS_DB_NAME: ${SUPERSET_POSTGRES_DB}
+      RDS_USERNAME: ${SUPERSET_POSTGRES_USER}
+      RDS_PASSWORD: ${SUPERSET_POSTGRES_PASSWORD}
+      RDS_PORT: ${SUPERSET_POSTGRES_PORT}
+      SUPERSET_SECRET_KEY: ${SUPERSET_SECRET_KEY}
+      ADMIN_PASSWORD: ${SUPERSET_ADMIN_PASSWORD}
+      GUEST_TOKEN_JWT_SECRET: ${SUPERSET_GUEST_TOKEN_JWT_SECRET}
+      MAPBOX_API_KEY: ${SUPERSET_MAPBOX_API_KEY}
+      SUPERSET_FEATURE_EMBEDDED_SUPERSET: ${SUPERSET_FEATURE_EMBEDDED_SUPERSET}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+{% if TLS_ENABLED %}
+      - "traefik.http.routers.superset.entrypoints=websecure"
+      - "traefik.http.routers.superset.middlewares=no-auth-secured@file"
+      - "traefik.http.routers.superset.rule=Host(`${SUPERSET_DOMAIN_NAME}`)"
+      - "traefik.http.routers.superset.tls.certresolver=lets-encrypt"
+      - "traefik.http.routers.superset.tls.options=mintls12@file"
+{% else %}
+      - "traefik.http.routers.superset.entrypoints=web"
+      - "traefik.http.routers.superset.middlewares=no-auth-secured@file"
+      - "traefik.http.routers.superset.rule=Host(`${SUPERSET_DOMAIN_NAME}`)"
+{% endif %}
+      - "traefik.http.services.superset.loadbalancer.passhostheader=true"
+
+networks:
+  proxy:
+    external: true
