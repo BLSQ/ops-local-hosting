@@ -12,8 +12,8 @@
         day: "*"
         month: "*"
         weekday: "0"
-    - name: install pip3
-      apt: name=python3-pip state=present update-cache=yes
+    # - name: install pip3
+    #   apt: name=python3-pip state=present update-cache=yes
     - name: Install latest passlib with pip
       pip: name=passlib
     - name: Install apache2-utils
@@ -185,7 +185,7 @@
           compose_template: "docker/traefik/docker-compose-tls-{{TLS_ENABLED}}.yml"
           env_template: docker/traefik.env
           unit_template: docker-compose/compose-unit.j2
-          used_by: "iaso dataviz hesabu d2d dhis2 feedback-loop"
+          used_by: "iaso dataviz hesabu d2d dhis2 feedback-loop superset"
         - name: netdata
           enabled: yes
           need_restart: yes
