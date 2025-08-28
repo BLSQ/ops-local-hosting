@@ -8,8 +8,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
     
-RUN pip install pymssql
-RUN pip install psycopg2
+RUN uv pip install pymssql
+RUN uv pip install psycopg2
 
 COPY ./build/superset_config.py /app/superset_config.py
 
