@@ -12,10 +12,12 @@
         day: "*"
         month: "*"
         weekday: "0"
-    # - name: install pip3
-    #   apt: name=python3-pip state=present update-cache=yes
-    - name: Install latest passlib with pip
-      pip: name=passlib
+    - name: install pip3
+      apt: name=python3-pip state=present update-cache=yes
+    - name: Install passlib via apt
+      apt:
+        name: python3-passlib
+        state: present
     - name: Install apache2-utils
       apt: name=apache2-utils
     - name: "create directory for traefik"
