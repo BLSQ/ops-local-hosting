@@ -28,7 +28,7 @@ services:
       - hesabu-redis
     environment:
       - REDIS_URL=redis://:${HESABU_REDIS_PASSWORD}@hesabu-redis:6379
-      - DATABASE_URL=postgres://${HESABU_POSTGRES_USER}:${HESABU_POSTGRES_PASSWORD}@hesabu-db:5432/${HESABU_POSTGRES_DB}
+      - DATABASE_URL=postgres://${HESABU_POSTGRES_USER}:${HESABU_POSTGRES_PASSWORD}@${HESABU_POSTGRES_HOST:-hesabu-db}:5432/${HESABU_POSTGRES_DB}
       - ADMIN_PASSWORD=${HESABU_ADMIN_PASSWORD}      
       - RAILS_ENV=production
       - RAILS_SERVE_STATIC_FILES=true
