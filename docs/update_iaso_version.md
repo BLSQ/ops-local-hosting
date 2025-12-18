@@ -34,7 +34,19 @@ journalctl -u iaso
 
 ## Run migrations and collectstatic
 
-After the upgrade, you may encounter the following migration error: 
+After the upgrade, if you don't encounter an error, simply run:
+```
+# Run the migrations again
+./manage.py migrate
+
+# Run collectstatic
+./manage.py collectstatic
+
+# Exit the container
+exit
+```
+
+But, you may encounter the following migration error: 
 
 `Migration audit.0006_modification_org_unit_change_request is applied before its dependency iaso.0343_importgpkg_default_valid on database default`.
 
@@ -42,7 +54,7 @@ To fix the issue, follow these steps:
 
 ```
 # Connect to iaso worker container
-sudo docker exec --detach-keys='ctrl-@' -it iaso_iaso_1 bash
+sudo docker exec --detach-keys='ctrl-@' -it iaso-iaso-worker-1 bash
 
 # Temporarily rename the squashed migration file
 mv  iaso/migrations/0001_squashed_0343_importgpkg_default_valid.py iaso/migrations/0001_squashed_0343_importgpkg_default_valid.txt
