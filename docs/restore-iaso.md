@@ -63,7 +63,5 @@ tar -xzvf ../burundi-iaso-s3.tar.gz
 assuming you installed mc and configured it (cfr mc alias)
 
 ```
-mc cp --continue --recursive ./instances/ localhostminio/iaso-prod/instances
-mc cp --continue --recursive ./forms/ localhostminio/iaso-prod/forms
-mc cp --continue --recursive ./instancefiles/ localhostminio/iaso-prod/instancefiles
+mc cp --recursive ./ localhostminio/iaso-prod/
 ```
