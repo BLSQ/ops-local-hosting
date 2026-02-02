@@ -24,8 +24,8 @@ services:
       PREPAREDNESS_TEMPLATE_FR_ID:
       PLUGINS:
       FAVICON_PATH:
-      LOGO_PATH:
-      APP_TITLE:
+      LOGO_PATH: ${IASO_LOGO_PATH:-images/logo.png}
+      APP_TITLE: ${IASO_APP_TITLE:-Iaso}
       GOOGLE_API_KEY_BASE64:
       THEME_PRIMARY_COLOR:
       THEME_SECONDARY_COLOR:
@@ -85,8 +85,8 @@ services:
       PREPAREDNESS_TEMPLATE_FR_ID:
       PLUGINS:
       FAVICON_PATH:
-      LOGO_PATH:
-      APP_TITLE:
+      LOGO_PATH: ${IASO_LOGO_PATH:-images/logo.png}
+      APP_TITLE: ${IASO_APP_TITLE:-Iaso}
       GOOGLE_API_KEY_BASE64:
       THEME_PRIMARY_COLOR:
       THEME_SECONDARY_COLOR:
