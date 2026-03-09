@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   db:
-    image: postgres:${DATAVIZ_POSTGRES_VERSION}
+    image: blsq/postgres:${DATAVIZ_POSTGRES_VERSION}
     volumes:
       - ./storage/db:/var/lib/postgresql/data
     environment:
@@ -10,7 +10,7 @@ services:
       POSTGRES_DB: ${DATAVIZ_POSTGRES_DB}
 
   memcached:
-    image: memcached:latest
+    image: blsq/memcached:${DATAVIZ_MEMCACHED_VERSION}
     environment:
       - MEMCACHED_USERNAME=memcached
       - MEMCACHED_PASSWORD=${DATAVIZ_MEMCACHE_PASSWORD}
@@ -21,7 +21,7 @@ services:
       - default
 
   redis:
-    image: redis:${DATAVIZ_REDIS_VERSION}
+    image: blsq/redis:${DATAVIZ_REDIS_VERSION}
     command: redis-server --requirepass ${DATAVIZ_REDIS_PASSWORD}
     volumes:
       - ./storage/redis:/data
@@ -89,7 +89,7 @@ services:
       - "ofelia.job-exec.duplicate_jobs.command=bundle exec rake cache_warmup:cleanup"
 
   ofelia:
-    image: mcuadros/ofelia:latest
+    image: blsq/ofelia:${DATAVIZ_OFELIA_VERSION}
     restart: always
     command: daemon --docker
     volumes:

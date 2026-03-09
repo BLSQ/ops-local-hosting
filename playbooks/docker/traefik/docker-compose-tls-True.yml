@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   traefik:
-    image: traefik:${TRAEFIK_VERSION}
+    image: blsq/traefik:${TRAEFIK_VERSION}
     command:
       #############################################
       ### Static Traefik V2 Configuration (CLI) ###
@@ -86,7 +86,7 @@ services:
       retries: 3
 
   portainer-ce:
-    image: "portainer/portainer-ce"
+    image: "blsq/portainer-ce:${PORTAINER_VERSION}"
     container_name: "portainer-ce"
     command: "--admin-password '{{PORTAINER_PASSWORD}}'"
     depends_on:

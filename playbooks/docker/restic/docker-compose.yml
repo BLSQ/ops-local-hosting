@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   ofelia:
-    image: mcuadros/ofelia:latest
+    image: blsq/ofelia:${RESTIC_OFELIA_VERSION}
     container_name: ofelia
     depends_on:
       - restic-backup
@@ -11,7 +11,7 @@ services:
     restart: always
 
   restic-backup:
-    image: restic/restic:latest
+    image: blsq/restic:${RESTIC_VERSION}
     env_file: .env
     volumes:
       - /home/backups:/home/backups

@@ -1,7 +1,7 @@
 version: "3"
 services:
   db:
-    image: postgres:${SUPERSET_POSTGRES_VERSION}
+    image: blsq/postgres:${SUPERSET_POSTGRES_VERSION}
     volumes:
       - ./storage/db:/var/lib/postgresql/data
     environment:
@@ -11,9 +11,7 @@ services:
 
 
   superset:
-    build:
-      context: .
-      dockerfile: ./build/Dockerfile
+    image: blsq/superset:${SUPERSET_VERSION}
     networks:
       - proxy
       - default
