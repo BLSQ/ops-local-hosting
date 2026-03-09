@@ -1,7 +1,7 @@
 version: "3.3"
 services:
   db:
-    image: postgres:${FEEDBACK_POSTGRES_VERSION}
+    image: blsq/postgres:${FEEDBACK_POSTGRES_VERSION}
     volumes:
       - ./storage/db:/var/lib/postgresql/data
     environment:
@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: ${FEEDBACK_POSTGRES_PASSWORD}
 
   redis:
-    image: redis:${FEEDBACK_REDIS_VERSION}
+    image: blsq/redis:${FEEDBACK_REDIS_VERSION}
     command: redis-server --requirepass ${FEEDBACK_REDIS_PASSWORD}
     volumes:
       - ./storage/redis:/data

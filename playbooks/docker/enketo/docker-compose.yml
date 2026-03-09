@@ -1,23 +1,21 @@
 version: "3"
 services:
   redis_main:
-    image: redis:5
+    image: blsq/redis:${ENKETO_REDIS_VERSION}
     command: redis-server
     volumes:
       - ./storage/redis_main_data/:/data/
     restart: unless-stopped
 
   redis_cache:
-    image: redis:5
+    image: blsq/redis:${ENKETO_REDIS_VERSION}
     command: redis-server
     volumes:
       - ./storage/redis_cache_data/:/data/
     restart: unless-stopped
 
   enketo-web:
-    build:
-      context: .
-      dockerfile: ./build/Dockerfile
+    image: blsq/enketo-express:${ENKETO_VERSION}
     networks:
       - proxy
       - default
