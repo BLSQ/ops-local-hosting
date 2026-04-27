@@ -32,6 +32,12 @@
     db: "{{ DHIS2_DATABASE_NAME }}"
   become_user: postgres
   
+- name: "Create pg_stat_statements extention"
+  postgresql_ext:
+    name: pg_stat_statements
+    db: "{{ DHIS2_DATABASE_NAME }}"
+  become_user: postgres
+  
 - name: "ALTER dhis_db_name"
   command: psql -d {{ DHIS2_DATABASE_NAME }} -c "ALTER DATABASE {{ DHIS2_DATABASE_NAME }} SET SEARCH_PATH=PUBLIC,POSTGIS;"
   become_user: postgres

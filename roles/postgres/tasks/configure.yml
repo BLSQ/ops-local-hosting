@@ -30,6 +30,7 @@
     - {name: 'random_page_cost', value: '{{postgres_random_page_cost | default(1.1)}}'}
     - {name: 'max_locks_per_transaction', value: '{{postgres_max_locks_per_transaction | default(96)}}'}
     - {name: 'jit', value: '{{postgres_jit | default("off")}}'}
+    - {name: 'shared_preload_libraries', value: '{{postgres_shared_preload_libraries | default("pg_stat_statements")}}'}
   become_user: postgres
   notify: postgresql__restart_service
 
