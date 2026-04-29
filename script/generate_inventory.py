@@ -136,7 +136,7 @@ if "superset" in selected_products:
         "SUPERSET_GUEST_TOKEN_JWT_SECRET": str(uuid.uuid4())
     })
 
-#
+# DHIS2
 if "dhis2" in selected_products:
     additional_vars["DHIS2_DATABASE_USER"] = "dhis2"
     additional_vars["DHIS2_DATABASE_NAME"] = "dhis2"
