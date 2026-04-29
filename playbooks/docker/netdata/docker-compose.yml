@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   netdata:
-    image: netdata/netdata
+    image: blsq/netdata:${NETDATA_VERSION}
     ports:
         - "19999:19999"    
     volumes:

@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   minio:
-    image: minio/minio:${MINIO_VERSION}
+    image: blsq/minio:${MINIO_VERSION}
     command: server --console-address :9001 /data
     ports:
       - "9000:9000"
@@ -52,7 +52,7 @@ services:
 {% endif %}
 
   minio-buckets:
-    image: minio/mc
+    image: blsq/mc:${MINIO_MC_VERSION}
     depends_on:
       - minio
     entrypoint: >
