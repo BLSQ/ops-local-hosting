@@ -12,7 +12,7 @@ services:
       POSTGRES_PASSWORD: ${IASO_DB_PASSWORD}
 
   iaso:
-    image: ghcr.io/blsq/iaso:${IASO_VERSION}
+    image: blsq/iaso:${IASO_VERSION}
     ports:
       - "8081:8081"
     links:
@@ -45,14 +45,13 @@ services:
       SECRET_KEY: ${IASO_SECRET_KEY}
       ENKETO_API_TOKEN: ${ENKETO_API_TOKEN}
       ENKETO_URL: ${ENKETO_URL}
+      ENCRYPTED_TEXT_FIELD_KEY: ${ENCRYPTED_TEXT_FIELD_KEY}
       DATABASE_URL: postgres://${IASO_DB_USER}:${IASO_DB_PASSWORD}@${IASO_DB_HOST:-db}/${IASO_DB_NAME}
       BACKGROUND_TASK_SERVICE: POSTGRES
 {% if TLS_ENABLED %}      
 {% else %}
       DISABLE_SSL_REDIRECT: 1
 {% endif %}
-    entrypoint: ./entrypoint.sh
-    command: start
     networks:
       - proxy
       - default
@@ -72,10 +71,9 @@ services:
       - "traefik.http.services.iaso.loadbalancer.passhostheader=true"
 
   iaso-worker:
-    image: ghcr.io/blsq/iaso:${IASO_VERSION}
+    image: blsq/iaso:${IASO_VERSION}
     restart: always
     command: manage tasks_worker
-    entrypoint: ./entrypoint.sh
     links:
       - db
     depends_on:
@@ -106,6 +104,8 @@ services:
       SECRET_KEY: ${IASO_SECRET_KEY}
       ENKETO_API_TOKEN: ${ENKETO_API_TOKEN}
       ENKETO_URL: ${ENKETO_URL}
+      # python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+      ENCRYPTED_TEXT_FIELD_KEY: ${ENCRYPTED_TEXT_FIELD_KEY}
       DATABASE_URL: postgres://${IASO_DB_USER}:${IASO_DB_PASSWORD}@${IASO_DB_HOST:-db}/${IASO_DB_NAME}
       BACKGROUND_TASK_SERVICE: POSTGRES
     networks:

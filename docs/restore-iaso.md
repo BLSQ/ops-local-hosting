@@ -7,7 +7,7 @@ sudo docker exec --detach-keys='ctrl-@'  -it  iaso_iaso_1 bash
 install mc command line
 
 ```
-curl https://dl.min.io/client/mc/release/linux-amd64/mc \
+curl -L https://dl.min.io/client/mc/release/linux-amd64/mc \
   --create-dirs \
   -o $HOME/minio-binaries/mc
 
