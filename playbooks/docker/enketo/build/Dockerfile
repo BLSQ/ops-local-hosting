@@ -1,4 +1,4 @@
-FROM enketo/enketo-express:4.1.0
+FROM blsq/enketo-express:4.1.1-4
 
 EXPOSE 3000
 

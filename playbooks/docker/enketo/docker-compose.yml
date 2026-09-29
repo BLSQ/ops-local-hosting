@@ -15,7 +15,9 @@ services:
     restart: unless-stopped
 
   enketo-web:
-    image: blsq/enketo-express:${ENKETO_VERSION}
+    build:
+      context: .
+      dockerfile: ./build/Dockerfile    
     networks:
       - proxy
       - default
