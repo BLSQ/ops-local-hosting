@@ -15,6 +15,7 @@ IMAGES=(
 "portainer/portainer-ce"
 "traefik"
 "restic/restic"
+"clickhouse/clickhouse-server"
 )
 
 # List images
