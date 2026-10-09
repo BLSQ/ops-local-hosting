@@ -100,7 +100,23 @@
     - name: "deploying superset config file"
       template:
         src: "docker/superset/build/superset_config.py"
-        dest: "/srv/docker/superset/build/superset_config.py" 
+        dest: "/srv/docker/superset/build/superset_config.py"
+    - name: "create directories for clickhouse"
+      file:
+        path: "/srv/docker/clickhouse/config/{{ item }}"
+        state: directory
+        recurse: yes
+      loop:
+        - users.d
+        - config.d
+    - name: "deploying clickhouse users config file"
+      template:
+        src: "docker/clickhouse/config/users.d/dhis.xml"
+        dest: "/srv/docker/clickhouse/config/users.d/dhis.xml"
+    - name: "deploying clickhouse merge_tree config file"
+      template:
+        src: "docker/clickhouse/config/config.d/merge_tree.xml"
+        dest: "/srv/docker/clickhouse/config/config.d/merge_tree.xml"
 - hosts: iaso
   tags: setup-dhis2-postgresql
   become: yes
@@ -187,7 +203,7 @@
           compose_template: "docker/traefik/docker-compose-tls-{{TLS_ENABLED}}.yml"
           env_template: docker/traefik.env
           unit_template: docker-compose/compose-unit.j2
-          used_by: "iaso dataviz hesabu d2d dhis2 feedback-loop superset"
+          used_by: "iaso dataviz hesabu d2d dhis2 feedback-loop superset clickhouse"
         - name: netdata
           enabled: yes
           need_restart: yes
@@ -212,4 +228,12 @@
           env_template: docker/superset.env
           unit_template: docker-compose/compose-unit.j2
           used_by: "superset"
+        - name: clickhouse
+          enabled: yes
+          need_restart: yes
+          root_dir: /srv/docker/clickhouse
+          compose_template: docker/clickhouse/docker-compose.yml
+          env_template: docker/clickhouse.env
+          unit_template: docker-compose/compose-unit.j2
+          used_by: "clickhouse"
     - docker_services: "{{ all_docker_services | selectattr('used_by', 'match', blsq_products_regexp)}}"
