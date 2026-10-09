@@ -1,0 +1,33 @@
+version: "3.9"
+services:
+  clickhouse:
+    image: blsq/clickhouse-server:${CLICKHOUSE_VERSION}
+    restart: always
+    networks:
+      - proxy
+      - default
+    volumes:
+      - ./storage/clickhouse:/var/lib/clickhouse
+      - ./storage/logs:/var/log/clickhouse-server
+      - ./config/users.d/dhis.xml:/etc/clickhouse-server/users.d/dhis.xml:ro
+      - ./config/config.d/merge_tree.xml:/etc/clickhouse-server/config.d/merge_tree.xml:ro
+    environment:
+      CLICKHOUSE_DB: ${CLICKHOUSE_DB}
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: ${CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT}
+
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--user", "${CLICKHOUSE_USER}", "--password", "${CLICKHOUSE_PASSWORD}", "--query", "SELECT 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+networks:
+  proxy:
+    external: true
