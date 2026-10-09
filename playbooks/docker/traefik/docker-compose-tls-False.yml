@@ -89,10 +89,16 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
-
+      # Host-based router
       - "traefik.http.routers.portainer-secured.entrypoints=web"
       - "traefik.http.routers.portainer-secured.middlewares=no-auth-secured@file"
-      - "traefik.http.routers.portainer-secured.rule=Host(`${PORTAINER_DOMAINE_NAME}`)"
+      - "traefik.http.routers.portainer-secured.rule=Host(`${PORTAINER_DOMAIN_NAME}`)"
+      # Path-based router
+      - "traefik.http.routers.portainer-path.entrypoints=web"
+      - "traefik.http.routers.portainer-path.rule=HostRegexp(`^.+\\.${DOMAIN_NAME}$`) && PathPrefix(`/__portainer`)"
+      - "traefik.http.routers.portainer-path.middlewares=strip-portainer-prefix,no-auth-secured@file"
+      # StripPrefix middleware
+      - "traefik.http.middlewares.strip-portainer-prefix.stripPrefix.prefixes=/__portainer"
 
       - "traefik.http.services.portainer-ce.loadbalancer.server.port=9000"
 
