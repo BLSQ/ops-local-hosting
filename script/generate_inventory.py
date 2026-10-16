@@ -23,7 +23,7 @@ server_ip = "localhost" if is_localhost else input("Enter the server public IP (
 ansible_user = input("Enter the username of the server: ").strip()
 
 # BLSQ products list
-available_products = ["dhis2", "iaso", "hesabu", "dataviz", "superset"]
+available_products = ["dhis2", "iaso", "hesabu", "dataviz", "superset", "clickhouse"]
 print("Available products:")
 for i, product in enumerate(available_products, 1):
     print(f"{i}. {product}")
@@ -136,6 +136,14 @@ if "superset" in selected_products:
         "SUPERSET_GUEST_TOKEN_JWT_SECRET": str(uuid.uuid4())
     })
 
+# ClickHouse
+if "clickhouse" in selected_products:
+    additional_vars.update({
+        "CLICKHOUSE_DB": "analytics",
+        "CLICKHOUSE_USER": "clickhouse",
+        "CLICKHOUSE_PASSWORD": generate_random_password(),
+    })
+
 # DHIS2
 if "dhis2" in selected_products:
     additional_vars["DHIS2_DATABASE_USER"] = "dhis2"
@@ -152,6 +160,15 @@ if "dhis2" in selected_products:
         "DHIS2_DOMAIN_NAME": dhis2_domain_name,
         "DHIS2_VERSION": dhis2_version
     })
+
+    # Use ClickHouse as DHIS2 analytics database
+    if "clickhouse" in selected_products:
+        additional_vars.update({
+            "DHIS2_ANALYTICS_DATABASE": "clickhouse",
+            "DHIS2_ANALYTICS_CONNECTION_URL": f"jdbc:clickhouse://clickhouse:8123/{additional_vars['CLICKHOUSE_DB']}",
+            "DHIS2_ANALYTICS_CONNECTION_USERNAME": additional_vars["CLICKHOUSE_USER"],
+            "DHIS2_ANALYTICS_CONNECTION_PASSWORD": additional_vars["CLICKHOUSE_PASSWORD"],
+        })
 
 
 # Inventory file
